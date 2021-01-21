@@ -1,0 +1,75 @@
+{% extends "_base_email.html" %}
+
+{% block styles %}
+    <style type="text/css">
+        .review-button {
+            border-radius: 30px;
+            background-color: #FFE500;
+            outline: none;
+
+            padding: 12px 35px;
+            border: none;
+            cursor: pointer;
+
+            position: relative;
+            display: flex;
+            justify-content: center;
+
+            width: 150px;
+
+            transition: background-color .2s linear;
+
+            text-decoration: none;
+            color: #1e1e1e;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+        <tr>
+            <td style="text-align: left; padding: 10px 40px 10px 40px; color: #1e1e1e; font-size: 18px">
+                <p>
+                    Hi, {{ username }}
+                </p>
+
+                <p>
+                    Your order has been completed!
+                </p>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="text-align: left; padding: 10px 40px 10px 40px; color: #1e1e1e; font-size: 18px">
+                <p>
+                    Thank you for using our services. Please let us know what you think about the purchase. Your feedback is highly appreciated, as it will help us serve you better.
+                </p>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="text-align: left; padding: 10px 40px 10px 40px; color: #1e1e1e; font-size: 18px">
+                <p>
+                    If you are willing, you can follow to leave your feedback for us.  It will only take 3 minutes, and your review will help us make LittleLight.store even better for you and other clients.
+                </p>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="text-align: left; padding: 10px 40px 10px 40px; color: #1e1e1e; font-size: 18px">
+                <p>
+                    The review will be published on the services page.
+                </p>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="text-align: left; padding: 10px 40px 10px 40px; color: #1e1e1e; font-size: 18px">
+                <a class="review-button" href="{{ review_link }}">
+                    <span style="font-size: 16px; font-weight: bold; text-align: center; width: 100%; color: #1e1e1e;">
+                        Leave a review
+                    </span>
+                </a>
+            </td>
+        </tr>
+
+{% endblock %}

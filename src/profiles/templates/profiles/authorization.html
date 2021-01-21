@@ -1,0 +1,58 @@
+{% extends "_base_email.html" %}
+
+{% block styles %}
+    <style type="text/css">
+        .code {
+            font-size: 18px;
+            letter-spacing: 2px;
+
+            font-color: #1e1e1e;
+        }
+
+        a {
+            font-color: #FFE500;
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <tr>
+        <td style="text-align: left; padding: 10px 40px 10px 40px; color: #1e1e1e; font-size: 18px">
+            <p>
+                To complete the authorization on the website and access the Dashboard, use this 6-digit code:
+            </p>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="text-align: left; padding: 10px 40px 10px 40px; color: #1e1e1e; font-size: 18px">
+                <span class="code">
+                        {{ callback_token }}
+                </span>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="text-align: left; padding: 10px 40px 10px 40px; color: #1e1e1e; font-size: 18px">
+            <p>
+                If you have not requested authorization, please ignore this email.
+            </p>
+
+        </td>
+    </tr>
+
+    <tr>
+        <td style="text-align: left; padding: 10px 40px 10px 40px; color: #1e1e1e; font-size: 18px">
+            <p>
+                Any questions? Email us:
+
+                <a href="mailto:support@littlelight.store">
+                    support@littlelight.store
+                </a>
+            </p>
+
+        </td>
+    </tr>
+
+{% endblock %}

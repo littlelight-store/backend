@@ -1,0 +1,2 @@
+class ServiceNotExists(BaseException):
+    pass

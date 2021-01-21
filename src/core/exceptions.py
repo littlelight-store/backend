@@ -1,0 +1,2 @@
+class BaseNotExistsException(BaseException):
+    pass

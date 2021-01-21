@@ -1,0 +1,2 @@
+class DestinyProfileDoesNotExists(BaseException):
+    pass

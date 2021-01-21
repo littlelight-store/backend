@@ -1,0 +1,16 @@
+aiohttp==3.6.2
+asyncpg==0.18.3
+psycopg2-binary==2.7.7
+python-socketio==4.3.1
+python-dateutil
+
+setuptools
+gunicorn
+
+mypy==0.670
+flake8==3.7.5
+black==18.9b0
+
+aiohttp-devtools==0.13.1
+
+sentry-sdk==0.13.2

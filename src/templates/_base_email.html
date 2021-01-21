@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style type="text/css">
+        .logo {
+            margin-left: auto;
+        }
+
+        .table a {
+            color: #2A5DB0;
+        }
+
+        .wrap {
+            padding: 50px;
+            width: 100%;
+        }
+
+        table {
+            max-width: 600px;
+            width: 100%;
+        }
+    </style>
+
+    <style>
+        @media (max-width: 680px) {
+            .wrap {
+                padding: 20px 10px;
+            }
+
+            table {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+
+    {% block styles %}{% endblock %}
+</head>
+<body style="margin: 0; padding: 0;">
+
+<div class="wrap" style='font-family: "OpenSans", Arial, sans-serif; background-color: #EEE; height: 100%;'>
+    <table class="table" align="center" border="0" cellpadding="0" cellspacing="0"
+           style="padding: 30px 0; border-collapse: collapse; border-radius: 20px; position: relative; margin-top: 2%; margin-bottom: 50px; background-color: #FFF">
+        <tr>
+            <td style="text-align: center;
+        background-color: #131313;
+        padding: 20px 20px;
+        border-radius: 10px 10px 0 0;">
+                <a href="https://littlelight.store/" style="display: block;">
+                    <img class="logo"
+                         src="https://littlelight.store/images/logo.png"
+                         alt="LittleLight.store">
+                </a>
+            </td>
+        </tr>
+
+        {% block content %}{% endblock %}
+
+
+        <tr>
+            <td style="color: #1e1e1e; padding: 10px 40px; font-size: 18px">
+                <p>
+                    Kind regards,
+                </p>
+
+                <p>
+                    The LittleLight.store team.
+                </p>
+            </td>
+        </tr>
+
+        <tr style="font-size: 14px;">
+            <td style="padding: 10px; text-align: center">
+                <a href="https://littlelight.store/">littlelight.store</a> 2018-2020 &#169;
+            </td>
+        </tr>
+
+        {% if not hide_unsubscribe %}
+            <tr style="font-size: 14px; color: #1e1e1e;">
+                <td style="padding: 10px; text-align: center">
+                    <a style="font-size: 12px; color: #1e1e1e;" href="https://littlelight.store/">Unsubscribe from
+                        emails</a>
+                </td>
+            </tr>
+        {% endif %}
+    </table>
+</div>
+
+</body>
+</html>

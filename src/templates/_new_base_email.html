@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style type="text/css">
+        html, body {
+            width: 100%;
+            background-color: #313131;
+            font-family: "Montserrat", Arial, sans-serif;
+        }
+
+        .letter, .letter {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .letter .container, .letter .container {
+            margin: 38px auto 41px auto;
+            width: 560px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .letter__button-two, .letter__button-two {
+            transition: background-color 0.2s linear;
+            background: #36D39B;
+            border-radius: 80px;
+            outline: none;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 18px;
+            width: 239px;
+            height: 55px;
+            border: none;
+            display: block;
+            margin: 37px auto 37px auto;
+            cursor: pointer;
+        }
+
+        .letter__button-two:active, .letter__button-two:active {
+            background-color: #2EB484;
+        }
+
+        .letter__header, .letter__header {
+            display: flex;
+            justify-content: center;
+            height: 70px;
+            width: 560px;
+            background-color: #1C1E23;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .letter__appeal, .letter__appeal {
+            background-color: #181819;
+        }
+
+        .letter__subheader, .letter__subheader {
+            line-height: 24px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 24px;
+            color: #ffffff;
+            margin-top: 37px;
+        }
+
+        .letter__descr, .letter__descr {
+            font-weight: 400;
+            font-size: 18px;
+            text-align: center;
+            color: #ffffff;
+            margin: 17px 40px 29px 40px;
+            max-width: 560px;
+            line-height: 28px;
+        }
+
+        .letter__code, .letter__code {
+            width: 560px;
+            background-color: #36D39B;
+        }
+
+        .letter__code_number, .letter__code_number {
+            font-weight: 700;
+            color: #ffffff;
+            text-align: center;
+            font-size: 48px;
+            line-height: 58.5px;
+            margin: 17px auto 16px auto;
+        }
+
+        .letter__login-by-link, .letter__login-by-link {
+            background-color: #181819;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 560px;
+        }
+
+        .letter__link, .letter__link {
+            font-weight: 600;
+            font-size: 18px;
+            line-height: 27px;
+            color: #ffffff;
+            margin-top: 31px;
+            text-align: center;
+        }
+
+        .letter__button, .letter__button {
+            transition: color 0.2s linear;
+            border: 2px solid #36D39B;
+            border-radius: 80px;
+            width: 224px;
+            height: 55px;
+            background-color: #181819;
+            display: block;
+            margin: 23px auto 0 auto;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 18px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .letter__button:hover, .letter__button:hover {
+            color: #36D39B;
+        }
+
+        .letter__button:active, .letter__button:active {
+            color: #2EB484;
+        }
+
+        .letter__note, .letter__note {
+            font-weight: 400;
+            font-size: 16px;
+            line-height: 27px;
+            color: #ffffff;
+            text-align: center;
+            padding: 0 30px 0 30px;
+        }
+
+        .letter__ignore, .letter__ignore {
+            font-weight: 400;
+            color: #7D7D7D;
+            font-size: 14px;
+            text-align: center;
+            margin: 29px auto 0 auto;
+            line-height: 27px;
+        }
+
+        .letter__icon_mini, .letter__icon_mini {
+            display: block;
+            margin: 40px auto 3px auto;
+        }
+
+        .letter__final-phrase, .letter__final-phrase {
+            font-weight: 400;
+            font-size: 18px;
+            line-height: 27px;
+            color: #ffffff;
+            text-align: center;
+            margin: 17px auto 37px auto;
+        }
+
+        .letter__block, .letter__block {
+            padding: 0 30px 0 30px;
+        }
+
+        .letter__block hr, .letter__block hr {
+            margin: 17px auto 17px auto;
+        }
+
+        .letter__data, .letter__data {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .letter__data-one, .letter__data-one {
+            font-weight: 400;
+            font-size: 18px;
+            line-height: 18px;
+            color: #ffffff;
+        }
+
+        .letter__data-two, .letter__data-two {
+            font-weight: 600;
+            font-size: 18px;
+            line-height: 18px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .letter__data-two_line, .letter__data-two_line {
+            display: flex;
+            margin: 11px 0 11px auto;
+        }
+
+        .letter__data-two_line_device, .letter__data-two_line_device {
+            margin-left: 5px;
+        }
+
+        .letter__data-two_line:last-child, .letter__data-two_line:last-child {
+            margin: 11px 0 0 auto;
+        }
+
+        .letter__data-two_line:nth-child(1), .letter__data-two_line:nth-child(1) {
+            margin: 0 0 11px auto;
+        }
+
+        .letter .footer, .letter .footer {
+            background-color: #1C1E23;
+            border-radius: 0px 0px 8px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 21px;
+        }
+
+        .letter .footer__social, .letter .footer__social {
+            margin-top: 36px;
+        }
+
+        .letter .footer__social-item, .letter .footer__social-item {
+            margin: 0 8px;
+        }
+
+        .letter .footer__rights, .letter .footer__rights {
+            font-weight: 400;
+            font-size: 12px;
+            color: #7d7d7d;
+            line-height: 18px;
+            margin-top: 40px;
+        }
+
+        .letter .footer__mailing, .letter .footer__mailing {
+            font-weight: 400;
+            font-size: 12px;
+            color: #7d7d7d;
+            line-height: 18px;
+            margin-top: 9px;
+            text-align: center;
+        }
+
+        .letter .footer__menu, .letter .footer__menu {
+            margin: 27px auto 53px auto;
+            display: flex;
+        }
+
+        .letter .footer__link, .letter .footer__link {
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 18px;
+            color: #ffffff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .letter .footer__separation, .letter .footer__separation {
+            color: #7d7d7d;
+            margin: 0 10px;
+        }
+
+        @media (max-width: 560px) {
+            .letter .container, .letter .container {
+                max-width: 320px;
+            }
+
+            .letter__header, .letter__header {
+                max-width: 320px;
+                border-radius: 0;
+            }
+
+            .letter__descr, .letter__descr {
+                max-width: 320px;
+                margin: 17px 14px 29px 14px;
+            }
+
+            .letter__code, .letter__code {
+                max-width: 320px;
+            }
+
+            .letter__login-by-link, .letter__login-by-link {
+                max-width: 320px;
+            }
+
+            .letter__button, .letter__button {
+                width: 288px;
+            }
+
+            .letter__button-two, .letter__button-two {
+                width: 288px;
+            }
+
+            .letter__block, .letter__block {
+                padding: 0 16px 0 16px;
+            }
+
+            .letter__data-two, .letter__data-two {
+                width: 131px;
+                word-break: break-word;
+                line-height: 27px;
+            }
+
+            .letter__data-two_line, .letter__data-two_line {
+                flex-direction: column;
+                align-items: flex-end;
+            }
+
+            .letter__data-two_line_name, .letter__data-two_line_name {
+                text-align: right;
+            }
+
+            .letter__note, .letter__note {
+                padding: 0 15px 0 15px;
+                line-height: 28px;
+            }
+
+            .letter .footer, .letter .footer {
+                max-width: 320px;
+                padding: 0 16px;
+                border-radius: 0;
+            }
+
+            .letter .footer__menu, .letter .footer__menu {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .letter .footer__menu_item, .letter .footer__menu_item {
+                margin-top: 13px;
+            }
+
+            .letter .footer__separation, .letter .footer__separation {
+                display: none;
+            }
+
+            .letter .footer__rights, .letter .footer__rights {
+                text-align: center;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+
+    {% block styles %}{% endblock %}
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div style='width:100%; background-color: #313131; font-family: "Montserrat", Arial, sans-serif; text-align: center'>
+    <div class="letter" style="display: inline-block ">
+        <table class="container" style="margin: 38px auto 41px auto;
+              max-width: 560px;
+              border-spacing: 0; background-color: #313131;
+            ">
+        <tr style="background-color: #1C1E23;">
+            <td>
+                <div class="letter__header"
+                     style="
+                  max-width: 560px;
+                  text-align: center;
+                  border-radius: 8px 8px 0 0;"
+                >
+                    <img src="https://littlelight.store/icons/logo.svg" alt="icon" class="letter__icon" style="display: inline-block;">
+                </div>
+            </td>
+        </tr>
+
+        {% block content %}{% endblock %}
+
+
+        <tr style="background-color: #181819;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 560px;
+    ">
+            <td class="letter__final-phrase" style="  font-weight: 400;
+          font-size: 18px;
+          line-height: 27px;
+          color: #ffffff;
+          text-align: center;
+          padding: 17px 0 37px 0;
+        ">Kind regards, <br> The LittleLight.Store team.
+            </td>
+        </tr>
+
+        <tr style="background-color: #1C1E23;
+          border-radius: 0 0 8px 8px;
+          text-align: center;
+          max-width: 560px;
+        ">
+            <td style="font-weight: 400;
+              padding: 0 21px;
+              font-size: 12px;
+              color: #7d7d7d;
+              line-height: 18px;
+              margin-top: 40px;
+              display: inline-block;
+            ">
+                All rights reserved. Copyright © 2021 LittleLight.Store
+            </td>
+        </tr>
+        <tr style="
+            background-color: #1C1E23;
+            border-radius: 0 0 8px 8px;
+            max-width: 560px;
+        ">
+            <td style="
+              padding: 0 21px;
+              font-weight: 400;
+              font-size: 12px;
+              color: #7d7d7d;
+              line-height: 18px;
+              margin-top: 9px;
+              display: inline-block;
+              text-align: center;
+            ">
+                This email was sent to {{ email }} because you indicated that you’d
+                like to stay up to date on the latest features, services,
+                support info and offers for LittleLight.Store.
+                You can unsubscribe from LittleLight.Store emails here
+            </td>
+        </tr>
+        <tr style="  background-color: #1C1E23;
+          border-radius: 0 0 8px 8px;
+        ">
+            <td style="text-align: center; display: block; margin-top: 27px; margin-bottom: 53px; padding: 0 21px">
+                    <div class="footer__menu_item" style="display: inline-block;">
+                        <a href="https://littlelight.store/info/privacy" style="font-size: 12px;
+                      font-weight: 400;
+                      line-height: 18px;
+                      display: inline-block;
+                      color: #ffffff;
+                      text-decoration: none;
+                      cursor: pointer;
+                    " class="footer__link">Privacy Policy</a>
+                        <div class="footer__separation" style="color: #7d7d7d; margin: 0 10px; display: inline-block;">|</div>
+                    </div>
+                    <div class="footer__menu_item" style="display: inline-block;">
+                        <a href="https://littlelight.store/info/terms-of-service" style="  font-size: 12px;
+                        display: inline-block;
+                      font-weight: 400;
+                      line-height: 18px;
+                      color: #ffffff;
+                      text-decoration: none;
+                      cursor: pointer;
+                    " class="footer__link">
+                            Terms & Conditions</a>
+                        <div class="footer__separation" style="color: #7d7d7d; margin: 0 10px; display: inline-block;">|</div>
+                    </div>
+
+                    <div class="footer__menu_item" style="display: inline-block;">
+                        <a href="https://littlelight.store" style="font-size: 12px;
+                      font-weight: 400;
+                      line-height: 18px;
+                      color: #ffffff;
+                      display: inline-block;
+                      text-decoration: none;
+                      cursor: pointer;
+                    " class="footer__link">Support</a>
+                        <div class="footer__separation" style="color: #7d7d7d; margin: 0 10px; display: inline-block;">|</div>
+                    </div>
+
+                    <div class="footer__menu_item" style="display: inline-block;">
+                        <a href="https://littlelight.store/dashboard" style="  font-size: 12px;
+                      font-weight: 400;
+                      line-height: 18px;
+                      color: #ffffff;
+                      display: inline-block;
+                      text-decoration: none;
+                      cursor: pointer;
+                    " class="footer__link">Dashboard</a>
+                    </div>
+            </td>
+        </tr>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

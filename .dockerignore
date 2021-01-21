@@ -1,0 +1,7 @@
+venv
+.git/
+.idea
+static_in_env/*
+src/boosting/test_settings.py
+dump-data.json
+prod-db.json
