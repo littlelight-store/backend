@@ -12,6 +12,7 @@ class OrdersConfig(AppConfig):
         from orders.repositories import DjangoShoppingCartRepository, DjangoShoppingCartItemRepository
         from orders.repositories import DjangoPromoCodeRepository
         from . import tasks
+        from . import views
 
         container.orders.client_orders_repository.override(providers.Factory(DjangoClientOrderRepository))
         container.orders.order_objectives_repository.override(providers.Factory(DjangoOrderObjectiveRepository))
@@ -21,4 +22,4 @@ class OrdersConfig(AppConfig):
 
         container.services.promo_code_repository.override(providers.Factory(DjangoPromoCodeRepository))
 
-        container.wire(modules=[tasks])
+        container.wire(modules=[tasks, views])

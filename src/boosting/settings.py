@@ -36,6 +36,8 @@ DEBUG = True if os.environ.get("DEBUG") == "True" else False
 
 ENVIRONMENT = os.environ.get("config__ENVIRONMENT", None)
 
+IS_PROD = ENVIRONMENT == 'prod'
+
 EMAIL_USE_TLS = True
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_PORT = os.environ.get("EMAIL_PORT")
@@ -268,22 +270,6 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Yekaterinburg"
 CELERY_BEAT_SCHEDULE = {
-    "send-review-email": {
-        "task": "reviews.tasks.send_review_link",
-        "schedule": crontab(minute="*/5", hour="*"),
-    },
-    "send-chat-unread-messages": {
-        "task": "orders.tasks.send_message_to_notify_unread_messages",
-        "schedule": crontab(minute="*/2", hour="*"),
-    },
-    "fake_customer_visit": {
-        "task": "orders.tasks._fake_customer",
-        "schedule": crontab(minute="*/21", hour="*"),
-    },
-    "change_old_orders_status": {
-        "task": "orders.tasks._change_old_orders_status",
-        "schedule": crontab(minute="*/15", hour="*"),
-    },
 }
 
 SITE_ID = os.environ.get("SITE_ID", 1)
@@ -345,3 +331,8 @@ else:
     CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
 
 DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN", 'NzM2NjQ1NzUxMjkxMTE3NzI4.Xxx00Q.P-sYlZWWF8kKO6zbMXwbpYH43Jw')
+
+TRUSTPILOT_BCC = os.environ.get(
+    'TRUSTPILOT_BCC',
+    'littlelight.store+18c17bb215@invite.trustpilot.com'
+)

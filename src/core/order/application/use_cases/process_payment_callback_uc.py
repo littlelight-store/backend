@@ -27,6 +27,7 @@ class ProcessPaymentCallbackUseCase:
         order.order_status_changed_at = dt.datetime.now()
 
         for objective in objectives:
-            objective.status_controller.processing()
+            objective.processing()
             self.order_objectives_repository.save(objective)
+        self.client_orders_repository.save(order)
 

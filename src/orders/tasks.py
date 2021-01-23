@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
+from boosting.settings import IS_PROD, TRUSTPILOT_BCC
 from core.order.application.use_cases.order_created_notifications import OrderCreatedNotificationsUseCaseDTOInput
 from infrastructure.injectors.application import ApplicationContainer
 
@@ -160,7 +161,12 @@ def new_order_created(
         },
     )
 
-    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+    bcc = []
+
+    # if IS_PROD:
+    #     bcc = [TRUSTPILOT_BCC]
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [to], bcc=bcc)
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
@@ -308,36 +314,36 @@ def send_new_year_message(emails):
         msg.send()
 
 
-@shared_task
-def send_message_to_notify_unread_messages():
-    notify_threshold = 15
-
-    from orders.models import Order
-
-    orders = Order.get_order_with_last_unread_messages_later_than(notify_threshold)
-
-    logger.info(f"Found orders with unread messages at chat: {len(orders)}")
-
-    for order in orders:
-        logger.info(f"Sending message with unread message to {order.send_to}")
-
-        if order.send_to == "booster":
-            booster_user = order.booster_user
-
-            if booster_user and booster_user.booster_profile.in_game_profile:
-                email = booster_user.email
-                username = booster_user.booster_profile.in_game_profile.username
-                # send_new_message_pending_message(username, email, "booster")
-            else:
-                logger.exception(
-                    "Found order without booster user with pending message"
-                )
-        elif order.send_to == "client":
-            user = order.bungie_profile.owner
-            email = user.email
-            username = user.username
-            # send_new_message_pending_message(username, email, "client")
-        order.save()
+# @shared_task
+# def send_message_to_notify_unread_messages():
+#     notify_threshold = 15
+#
+#     from orders.models import Order
+#
+#     orders = Order.get_order_with_last_unread_messages_later_than(notify_threshold)
+#
+#     logger.info(f"Found orders with unread messages at chat: {len(orders)}")
+#
+#     for order in orders:
+#         logger.info(f"Sending message with unread message to {order.send_to}")
+#
+#         if order.send_to == "booster":
+#             booster_user = order.booster_user
+#
+#             if booster_user and booster_user.booster_profile.in_game_profile:
+#                 email = booster_user.email
+#                 username = booster_user.booster_profile.in_game_profile.username
+#                 # send_new_message_pending_message(username, email, "booster")
+#             else:
+#                 logger.exception(
+#                     "Found order without booster user with pending message"
+#                 )
+#         elif order.send_to == "client":
+#             user = order.bungie_profile.owner
+#             email = user.email
+#             username = user.username
+#             # send_new_message_pending_message(username, email, "client")
+#         order.save()
 
 
 customer_amount_items_chosen = [
@@ -381,48 +387,48 @@ def accept_pending_orders():
         order.save()
 
 
-@shared_task
-def _fake_customer():
-    from orders.models import Order
-    from orders.enum import OrderStatus
-    from services.models import Service
-
-    def clear_old_models():
-        Order.objects.filter(is_faked=True, created_at_gte=True)
-
-    user_is_quited = random.choice([0, 1])
-
-    print(f"User is quited: {user_is_quited}")
-
-    if not user_is_quited:
-        number_of_items_he_got = random.choice(customer_amount_items_chosen)
-
-        print(f"He got {number_of_items_he_got} items")
-
-        taken_services = []
-        for _ in range(0, number_of_items_he_got):
-            services_to_decide = [
-                service
-                for service in services_to_chose
-                if service not in taken_services
-            ]
-            service_he_got = random.choice(services_to_decide)
-            print(f"Got service: {service_he_got}")
-
-            try:
-                service = Service.objects.get(slug=service_he_got)
-            except Service.DoesNotExist:
-                pass
-            else:
-                order = Order.objects.create(
-                    service=service,
-                    is_faked=True,
-                    taken_at=dt.datetime.now(),
-                    status=OrderStatus.in_progress.value,
-                    site_id=1,
-                )
-                print(f"Created order: {order}")
-                taken_services.append(service_he_got)
+# @shared_task
+# def _fake_customer():
+#     from orders.models import Order
+#     from orders.enum import OrderStatus
+#     from services.models import Service
+#
+#     def clear_old_models():
+#         Order.objects.filter(is_faked=True, created_at_gte=True)
+#
+#     user_is_quited = random.choice([0, 1])
+#
+#     print(f"User is quited: {user_is_quited}")
+#
+#     if not user_is_quited:
+#         number_of_items_he_got = random.choice(customer_amount_items_chosen)
+#
+#         print(f"He got {number_of_items_he_got} items")
+#
+#         taken_services = []
+#         for _ in range(0, number_of_items_he_got):
+#             services_to_decide = [
+#                 service
+#                 for service in services_to_chose
+#                 if service not in taken_services
+#             ]
+#             service_he_got = random.choice(services_to_decide)
+#             print(f"Got service: {service_he_got}")
+#
+#             try:
+#                 service = Service.objects.get(slug=service_he_got)
+#             except Service.DoesNotExist:
+#                 pass
+#             else:
+#                 order = Order.objects.create(
+#                     service=service,
+#                     is_faked=True,
+#                     taken_at=dt.datetime.now(),
+#                     status=OrderStatus.in_progress.value,
+#                     site_id=1,
+#                 )
+#                 print(f"Created order: {order}")
+#                 taken_services.append(service_he_got)
 
 
 @shared_task

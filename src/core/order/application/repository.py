@@ -25,6 +25,10 @@ class ClientOrderRepository(abc.ABC):
     def get_by_cart_id(self, cart_id: ShoppingCartId) -> ClientOrder:
         pass
 
+    @abc.abstractmethod
+    def save(self, client_order: ClientOrder):
+        pass
+
 
 class OrderObjectiveRepository(abc.ABC):
     @abc.abstractmethod

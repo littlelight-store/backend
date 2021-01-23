@@ -9,7 +9,7 @@ from ..domain.entities.service import Service
 def generate_client_order(**kwargs):
     data = {
         'total_price': 100,
-        'cart_id': '123',
+        'order_id': '123',
         'client_id': 12,
         'payment_id': 'some-payment-id',
         'comment': '',

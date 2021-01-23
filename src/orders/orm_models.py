@@ -82,6 +82,9 @@ class ORMClientOrder(models.Model):
     platform = models.ForeignKey('profiles.BungiePlatform', on_delete=models.SET_NULL, null=True, blank=True)
     promo = models.ForeignKey('services.PromoCode', on_delete=models.SET_NULL, null=True, blank=True)
 
+    def __str__(self):
+        return f"<ClientOrder user={self.client} total_price={self.total_price} created_at={self.created_at}>"
+
 
 class ORMOrderObjective(OrderObjectiveStateMachineMixin, models.Model):
     class Meta:

@@ -127,17 +127,17 @@ class OrderCreatedNotificationsUseCase:
             profile = profiles.get(obj.destiny_profile_id)
             character = characters.get(obj.destiny_character_id)
 
-            # self.event_notifications_repository.new_order_created(
-            #     self._make_event_order_created_dto(
-            #         service=service,
-            #         order=order,
-            #         order_objective=obj,
-            #         selected_options=selected_options,
-            #         client=client,
-            #         profile=profile,
-            #         character=character
-            #     )
-            # )
+            self.event_notifications_repository.new_order_created(
+                self._make_event_order_created_dto(
+                    service=service,
+                    order=order,
+                    order_objective=obj,
+                    selected_options=selected_options,
+                    client=client,
+                    profile=profile,
+                    character=character
+                )
+            )
 
         self.send_email(
             order=order,

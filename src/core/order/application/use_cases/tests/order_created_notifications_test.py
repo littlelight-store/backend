@@ -11,6 +11,7 @@ from core.order.application.use_cases.order_created_notifications import (
     OrderCreatedNotificationsUseCase,
     OrderCreatedNotificationsUseCaseDTOInput,
 )
+from notificators.new_email import DjangoEmailNotificator
 
 
 @pytest.fixture()
@@ -23,7 +24,8 @@ def uc():
         service_configs_repository=Mock(spec=ServiceConfigsRepository),
         destiny_bungie_profile_repository=Mock(spec=DestinyBungieProfileRepository),
         destiny_character_repository=Mock(spec=DestinyBungieCharacterRepository),
-        clients_repository=Mock(spec=ClientsRepository)
+        clients_repository=Mock(spec=ClientsRepository),
+        email_notificator=Mock(spec=DjangoEmailNotificator)
     )
 
 

@@ -96,6 +96,13 @@ class DjangoShoppingCartItemRepository(ShoppingCartItemRepository):
 
 
 class DjangoClientOrderRepository(ClientOrderRepository):
+    def save(self, client_order: ClientOrder):
+        ORMClientOrder.objects.filter(
+            id=client_order.id
+        ).update(
+            order_status=client_order.order_status,
+            order_status_changed_at=client_order.order_status_changed_at
+        )
 
     def get_by_cart_id(self, cart_id: ShoppingCartId) -> ClientOrder:
         order = ORMClientOrder.objects.filter(
