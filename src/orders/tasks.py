@@ -1,6 +1,4 @@
-import datetime as dt
 import logging
-import random
 import typing as t
 
 from celery import shared_task
@@ -9,8 +7,9 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
-from boosting.settings import IS_PROD, TRUSTPILOT_BCC
 from core.order.application.use_cases.order_created_notifications import OrderCreatedNotificationsUseCaseDTOInput
+from core.order.application.use_cases.status_callbacks.order_pending_approval import \
+    OrderPendingApprovalCallbackDTORequest
 from infrastructure.injectors.application import ApplicationContainer
 
 from notifications import send_telegram_message_order_created
@@ -86,11 +85,10 @@ def _build_incorrect_credentials_message(username):
     return text
 
 
-def _build_pending_approval(username, order_info):
+def _build_pending_approval(services):
     text = (
-        f"Hi, {username}"
-        f"The following service has been completed:\n\n"
-        f"{order_info['title']} — {order_info['price']}"
+        f"The following services has been completed:\n\n"
+        f"{services}"
         f"We await confirmation of completion on your part."
         f"To do this, please log in to the dashboard and mark the order "
         f"completed after you check your account.\n\n"
@@ -214,39 +212,21 @@ def incorrect_credentials(user_email, username):
 
 
 @shared_task
-def pending_approval(user_email, username, order_info):
+def pending_approval(user_email, services):
     subject, from_email, to = (
         "Your order has been completed",
         settings.DEFAULT_FROM_EMAIL,
         user_email,
     )
 
-    dashboard_url = get_dashboard_url()
-
-    text_content = _build_pending_approval(username, order_info)
+    text_content = _build_pending_approval(services)
     html_content = render_to_string(
-        "orders/status/pending-approval.html",
-        {"username": username, "service": order_info, "dashboard_link": dashboard_url},
+        "orders/status/new/pending-approval.html",
+        {"services": services, "email": user_email},
     )
 
     msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
     msg.attach_alternative(html_content, "text/html")
-    msg.send()
-
-
-@shared_task
-def order_created_admin():
-    subject, from_email = (
-        "!!! NEW ORDER ON LITTELIGHT.store !!!",
-        settings.DEFAULT_FROM_EMAIL,
-    )
-
-    msg = EmailMultiAlternatives(
-        subject,
-        "HEY! CHECK THIS OUT. NEW ORDER",
-        from_email,
-        ["mamosiko@gmail.com", "littlelight.boost@gmail.com"],
-    )
     msg.send()
 
 
@@ -271,204 +251,6 @@ def send_order_created_telegram_notification(
         )
 
 
-def _build_new_message(username, role):
-    if role == "booster":
-        return (
-            f"Hi, {username}"
-            f"You have received a new message from your client.\n"
-            f"Please visit the Dashboard and check this out."
-        )
-    elif role == "client":
-        return (
-            f"Hi, {username}"
-            f"You have received a new message from your booster.\n"
-            f"The booster is looking forward to your reply.\n"
-            f"However, in case of a critical situation, you will be additionally notified of the change in order status."
-        )
-    else:
-        return None
-
-
-def send_new_year_message(emails):
-    for email in emails:
-        subject, from_email, to = (
-            "Destiny 2 boosting Christmas and New Year sale 🎁",
-            settings.DEFAULT_FROM_EMAIL,
-            email,
-        )
-
-        text_content = """
-            Dear friend,
-            We are launching a Christmas and New Year sale. 
-            We offer a 15% discount on the entire catalog. 
-            But that is not all! 
-            Every customer who spends at least $100 during the sale will 
-            receive a personal code for a 20% discount on absolutely any 
-            purchase during the next year. 
-            """
-
-        html_content = render_to_string(f"orders/new_year.html",)
-
-        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
-
-
-# @shared_task
-# def send_message_to_notify_unread_messages():
-#     notify_threshold = 15
-#
-#     from orders.models import Order
-#
-#     orders = Order.get_order_with_last_unread_messages_later_than(notify_threshold)
-#
-#     logger.info(f"Found orders with unread messages at chat: {len(orders)}")
-#
-#     for order in orders:
-#         logger.info(f"Sending message with unread message to {order.send_to}")
-#
-#         if order.send_to == "booster":
-#             booster_user = order.booster_user
-#
-#             if booster_user and booster_user.booster_profile.in_game_profile:
-#                 email = booster_user.email
-#                 username = booster_user.booster_profile.in_game_profile.username
-#                 # send_new_message_pending_message(username, email, "booster")
-#             else:
-#                 logger.exception(
-#                     "Found order without booster user with pending message"
-#                 )
-#         elif order.send_to == "client":
-#             user = order.bungie_profile.owner
-#             email = user.email
-#             username = user.username
-#             # send_new_message_pending_message(username, email, "client")
-#         order.save()
-
-
-customer_amount_items_chosen = [
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    2,
-    2,
-    2,
-    2,
-    3,
-]
-
-services_to_chose = [
-    *["garden-of-salvation"] * 7,
-    *["trials-of-osiris"] * 10,
-    *["weekly-pinnacle-rewards"] * 8,
-    *["pit-of-heresy"] * 5,
-]
-
-
-@shared_task
-def accept_pending_orders():
-    from orders.models import Order
-    from orders.enum import OrderStatus
-
-    date = dt.datetime.now() - dt.timedelta(days=2)
-
-    orders = Order.objects.filter(
-        status=OrderStatus.pending_approval.value,
-        complete_at__lte=date
-    )
-
-    for order in orders:
-        order.status = OrderStatus.is_complete.value
-        order.save()
-
-
-# @shared_task
-# def _fake_customer():
-#     from orders.models import Order
-#     from orders.enum import OrderStatus
-#     from services.models import Service
-#
-#     def clear_old_models():
-#         Order.objects.filter(is_faked=True, created_at_gte=True)
-#
-#     user_is_quited = random.choice([0, 1])
-#
-#     print(f"User is quited: {user_is_quited}")
-#
-#     if not user_is_quited:
-#         number_of_items_he_got = random.choice(customer_amount_items_chosen)
-#
-#         print(f"He got {number_of_items_he_got} items")
-#
-#         taken_services = []
-#         for _ in range(0, number_of_items_he_got):
-#             services_to_decide = [
-#                 service
-#                 for service in services_to_chose
-#                 if service not in taken_services
-#             ]
-#             service_he_got = random.choice(services_to_decide)
-#             print(f"Got service: {service_he_got}")
-#
-#             try:
-#                 service = Service.objects.get(slug=service_he_got)
-#             except Service.DoesNotExist:
-#                 pass
-#             else:
-#                 order = Order.objects.create(
-#                     service=service,
-#                     is_faked=True,
-#                     taken_at=dt.datetime.now(),
-#                     status=OrderStatus.in_progress.value,
-#                     site_id=1,
-#                 )
-#                 print(f"Created order: {order}")
-#                 taken_services.append(service_he_got)
-
-
-@shared_task
-def _change_old_orders_status():
-    from orders.models import Order
-    from orders.enum import OrderStatus
-
-    min_complete_time = dt.datetime.now() - dt.timedelta(hours=5)
-
-    # taken_at = 21.02.2019 - 00:00
-    # now - 21.02.2019 - 18:00
-    # min = 21.02.2019 - 11:00
-    # max = 20.02.2019 - 18:00
-
-    orders = (
-        Order.objects.filter(taken_at__lte=min_complete_time, is_faked=True)
-        .exclude(status=OrderStatus.is_complete.value)
-        .order_by("taken_at")
-    )
-
-    print(f"Got orders: {len(orders)}")
-
-    num_orders_will_be_updated = [*[1] * 6, *[2] * 3, *[3] * 1]
-
-    order_to_update = random.choice(num_orders_will_be_updated)
-    print(f"Will be updated: {order_to_update}")
-
-    for order in orders:
-        print(f"Count orders to update: {order_to_update}")
-        if order_to_update:
-            order_to_update -= 1
-            is_complete = random.choice([0, 1])
-
-            print(f"Will complete: {is_complete}")
-
-            if is_complete:
-                order.status = OrderStatus.is_complete.value
-                order.save()
-
-
 @shared_task
 @inject
 def order_created_notifications(
@@ -481,3 +263,17 @@ def order_created_notifications(
             client_order_id=client_order_id
         )
     )
+
+
+@shared_task
+@inject
+def set_pending_approval_task(
+    order_objective_id,
+    uc=Provide[ApplicationContainer.orders_status_uc.order_pending_approval_uc]
+):
+    logger.info(f'Starting task set_pending_approval_task with {order_objective_id}')
+
+    dto = OrderPendingApprovalCallbackDTORequest(
+        order_objective_id=order_objective_id
+    )
+    uc.execute(dto)

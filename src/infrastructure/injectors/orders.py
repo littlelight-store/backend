@@ -3,6 +3,7 @@ from dependency_injector import containers, providers
 from core.order.application.repository import ClientOrderRepository, OrderObjectiveRepository
 from core.order.application.use_cases.order_created_notifications import OrderCreatedNotificationsUseCase
 from core.order.application.use_cases.process_payment_callback_uc import ProcessPaymentCallbackUseCase
+from core.order.application.use_cases.status_callbacks.order_pending_approval import OrderPendingApprovalCallbackUseCase
 
 
 class OrdersUseCases(containers.DeclarativeContainer):
@@ -37,3 +38,21 @@ class OrdersUseCases(containers.DeclarativeContainer):
 class OrdersContainer(containers.DeclarativeContainer):
     client_orders_repository = providers.ExternalDependency(ClientOrderRepository)
     order_objectives_repository = providers.ExternalDependency(OrderObjectiveRepository)
+
+
+class OrderStatusChangeUcContainer(containers.DeclarativeContainer):
+    orders = providers.DependenciesContainer()
+    services = providers.DependenciesContainer()
+    clients = providers.DependenciesContainer()
+    email_notificator = providers.Dependency()
+    telegram_notifications = providers.DependenciesContainer()
+
+    order_pending_approval_uc = providers.Factory(
+        OrderPendingApprovalCallbackUseCase,
+        event_notifications_repository=telegram_notifications.repository,
+        client_orders_repository=orders.client_orders_repository,
+        order_objectives_repository=orders.order_objectives_repository,
+        services_repository=services.service_rep,
+        clients_repository=clients.clients_repository,
+        email_notificator=email_notificator
+    )

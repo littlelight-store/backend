@@ -32,8 +32,6 @@ class OrderCreatedNotificationsUseCase:
         destiny_character_repository: DestinyBungieCharacterRepository,
         clients_repository: ClientsRepository,
         email_notificator: DjangoEmailNotificator
-        # order_executors_notificator_repository: OrderExecutorsNotificationRepository,
-        # client_notifications_repository: ClientNotificationRepository,
     ):
         self.email_notificator = email_notificator
         self.service_configs_repository = service_configs_repository
@@ -44,8 +42,6 @@ class OrderCreatedNotificationsUseCase:
         self.destiny_bungie_profile = destiny_bungie_profile_repository
         self.order_objectives_repository = order_objectives_repository
         self.client_orders_repository = client_orders_repository
-        # self.order_executors_notificator_repository = order_executors_notificator_repository
-        # self.client_notifications_repository = client_notifications_repository
 
     @staticmethod
     def _make_event_order_created_dto(

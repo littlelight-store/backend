@@ -2,6 +2,7 @@ from dependency_injector import containers, providers
 
 from core.clients.application.dashboard.list_client_dashboard_use_case import ListClientDashboardUseCase
 from core.clients.application.dashboard.set_membership_credentials_uc import SetMembershipCredentialsUseCase
+from core.order.application.use_cases.client_order_status_dispatcher import OrderStatusDispatcher
 
 
 class ClientDashboardUcContainer(containers.DeclarativeContainer):
@@ -26,4 +27,9 @@ class ClientDashboardUcContainer(containers.DeclarativeContainer):
     set_membership_credentials_uc = providers.Factory(
         SetMembershipCredentialsUseCase,
         client_credentials_repository=clients.clients_credentials_repository
+    )
+
+    client_order_status_dispatcher_uc = providers.Factory(
+        OrderStatusDispatcher,
+        order_objective_repository=orders.order_objectives_repository,
     )

@@ -13,6 +13,8 @@ from profiles.constants import Membership
 class ClientOrderStatus(str, enum.Enum):
     AWAIT_PAYMENT = 'AWAIT_PAYMENT'
     PAYED = 'PAYED'
+    PENDING_APPROVAL = 'PENDING_APPROVAL'
+    COMPLETE = 'COMPLETE'
 
     @classmethod
     def choices(cls):
@@ -36,8 +38,13 @@ class ClientOrderObjective(OrderObjectiveStateMachineMixin):
         price: Decimal,
         status: OrderObjectiveStatus,
         status_changed_at: dt.datetime,
+        created_at: dt.datetime,
+        client_id: int,
         booster_id: t.Optional[BoosterId] = None,
     ):
+        super().__init__()
+        self.client_id = client_id
+        self.created_at = created_at
         self.destiny_profile_id = destiny_profile_id
         self.destiny_character_id = destiny_character_id
         self.id = _id
@@ -50,6 +57,13 @@ class ClientOrderObjective(OrderObjectiveStateMachineMixin):
         self.status_changed_at = status_changed_at
         self.range_options = range_options
 
+    def has_final_status(self):
+        final_statuses = [
+            OrderObjectiveStatus.PENDING_APPROVAL,
+            OrderObjectiveStatus.COMPLETED
+        ]
+        return self.status in final_statuses
+
     @classmethod
     def create(
         cls,
@@ -61,6 +75,7 @@ class ClientOrderObjective(OrderObjectiveStateMachineMixin):
 
         selected_option_ids: t.List[int],
         range_options: t.Optional[dict],
+        client_id: int,
 
         price: Decimal = 0,
 
@@ -79,7 +94,9 @@ class ClientOrderObjective(OrderObjectiveStateMachineMixin):
 
             price=price,
             status=OrderObjectiveStatus.CREATED,
-            status_changed_at=dt.datetime.utcnow()
+            status_changed_at=dt.datetime.utcnow(),
+            created_at=dt.datetime.utcnow(),
+            client_id=client_id
         )
 
 

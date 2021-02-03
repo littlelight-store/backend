@@ -1,8 +1,10 @@
 import logging
 import typing as t
 
+from django.db.models import Q
+
 from core.domain.entities.shopping_cart.exceptions import ShoppingCartDoesNotExists
-from core.order.application.exceptions import OrderDoesNotExists
+from core.order.application.exceptions import OrderDoesNotExists, OrderObjectiveNotExists
 from core.order.application.repository import OrderObjectiveRepository, ClientOrderRepository
 from core.order.domain.order import ClientOrder, ClientOrderObjective, ClientOrderStatus
 from core.order.domain.consts import OrderObjectiveStatus
@@ -96,6 +98,15 @@ class DjangoShoppingCartItemRepository(ShoppingCartItemRepository):
 
 
 class DjangoClientOrderRepository(ClientOrderRepository):
+    def get_by_order_objective(
+        self,
+        order_objective_id: str
+    ) -> ClientOrder:
+        order = ORMClientOrder.objects.get(
+            ormorderobjective__id=order_objective_id
+        )
+        return self._encode(order)
+
     def save(self, client_order: ClientOrder):
         ORMClientOrder.objects.filter(
             id=client_order.id
@@ -160,6 +171,22 @@ class DjangoClientOrderRepository(ClientOrderRepository):
 
 class DjangoOrderObjectiveRepository(OrderObjectiveRepository):
 
+    def list_by_booster(self, booster_id: int) -> t.List[ClientOrderObjective]:
+        objs = ORMOrderObjective.objects.filter(
+            booster__user__id=booster_id
+        )
+        return list(map(self._encode, objs))
+
+    def get_by_user_and_id(self, order_objective_id: str, client_id: int) -> ClientOrderObjective:
+        try:
+            objective = ORMOrderObjective.objects.get(
+                Q(client_order__client_id=client_id) | Q(booster__user__id=client_id),
+                id=order_objective_id,
+            )
+            return self._encode(objective)
+        except ORMOrderObjective.DoesNotExist:
+            raise OrderObjectiveNotExists()
+
     def save(self, order: ClientOrderObjective):
         ORMOrderObjective.objects.filter(id=order.id).update(
             status=order.status,
@@ -191,7 +218,9 @@ class DjangoOrderObjectiveRepository(OrderObjectiveRepository):
             range_options=data.range_options,
             status=data.status,
             status_changed_at=data.status_changed_at,
-            booster_id=data.booster_id
+            booster_id=data.booster_id,
+            created_at=data.created_at,
+            client_id=data.client_order.client_id
         )
 
     def create_bulk(self, order_objectives: t.List[ClientOrderObjective]):
@@ -206,6 +235,7 @@ class DjangoOrderObjectiveRepository(OrderObjectiveRepository):
                 status=order_objective.status.name,
                 status_changed_at=order_objective.status_changed_at,
                 booster_id=order_objective.booster_id,
+                created_at=order_objective.created_at
             )
             _orm_obj.save()
 

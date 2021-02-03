@@ -1,7 +1,9 @@
 import typing as t
 from pydantic import BaseModel
+import datetime as dt
 
 from core.application.repositories.services import ServiceConfigsRepository, ServiceRepository
+from core.application.use_cases.dashboard.base_list_orders_dashboard import BaseListOrdersDashboard
 from core.boosters.application.repository import BoostersRepository
 from core.bungie.entities import DestinyBungieProfile, DestinyCharacter
 from core.bungie.repositories import DestinyBungieCharacterRepository, DestinyBungieProfileRepository
@@ -39,10 +41,11 @@ class ShortOrderModel(BaseModel):
     service_image: str
 
     selected_options: t.List[ClientDashboardSelectedOptions]
-    booster: t.Optional[dict]
+    booster: t.Optional[dict] = None
     status: OrderObjectiveStatus
     order_id: str
     order_objective_id: str
+    created_at: dt.datetime
 
     progress: int = 0
 
@@ -63,7 +66,7 @@ class ListClientDashboardUseCaseDTOOutput(BaseModel):
 IGNORED_PLATFORMS = [Membership.BattleNET]
 
 
-class ListClientDashboardUseCase:
+class ListClientDashboardUseCase(BaseListOrdersDashboard):
     def __init__(
         self,
         destiny_bungie_profile_repository: DestinyBungieProfileRepository,
@@ -131,20 +134,7 @@ class ListClientDashboardUseCase:
 
         objectives = self.order_objective_repository.list_by_orders(client_orders)
 
-        destiny_characters: t.Dict[str, DestinyCharacter] = map_by_key(
-            self.destiny_character_repository.list_by_orders(client_orders), 'character_id'
-        )
-        destiny_profiles: t.Dict[str, DestinyBungieProfile] = map_by_key(
-            self.destiny_bungie_profile_repository.list_by_orders(client_orders), 'membership_id'
-        )
-        services: t.Dict[str, Service] = map_by_key(
-            self.service_repository.list_by_client_orders(client_orders),
-            'slug'
-        )
-        service_configs: t.Dict[int, ServiceConfig] = map_by_key(
-            self.service_configs_repository.list_by_client_orders(client_orders),
-            'id'
-        )
+        order_aggregated_data = self.get_aggregated_data(client_orders)
 
         boosters = map_by_key(
             self.boosters_repository.list_by_client_orders(dto.client_id),
@@ -154,9 +144,10 @@ class ListClientDashboardUseCase:
         platforms = set()
 
         for objective in objectives:
-            character = destiny_characters[objective.destiny_character_id]
-            profile = destiny_profiles[objective.destiny_profile_id]
-            service = services[objective.service_slug]
+            character = order_aggregated_data['destiny_characters'][objective.destiny_character_id]
+            profile = order_aggregated_data['destiny_profiles'][objective.destiny_profile_id]
+            service = order_aggregated_data['services'][objective.service_slug]
+
             booster = boosters[objective.booster_id] if objective.booster_id else None
             platforms.add(profile.membership_type)
             result.orders.append(
@@ -169,7 +160,7 @@ class ListClientDashboardUseCase:
                     total_price=objective.price,
                     selected_options=[
                         ClientDashboardSelectedOptions(
-                            title=service_configs[s].title
+                            title=order_aggregated_data['service_configs'][s].title
                         )
                         for s in objective.selected_option_ids
                     ],
@@ -181,7 +172,8 @@ class ListClientDashboardUseCase:
                         avatar=booster.avatar,
                         username=booster.username,
                         rating=booster.rating
-                    ) if booster else None
+                    ) if booster else None,
+                    created_at=objective.created_at
                 )
             )
 

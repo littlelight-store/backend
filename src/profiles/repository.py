@@ -1,6 +1,7 @@
 import typing as t
 from typing import List
 
+from django.db.models import Subquery
 from pydantic import EmailStr
 
 from core.application.repositories.order import AbstractBoostersRepository
@@ -17,6 +18,7 @@ from core.domain.entities.shopping_cart.exceptions import CharacterDoesNotExists
 from core.domain.exceptions import BoosterNotExists
 from core.domain.object_values import ClientId, DiscordId
 from core.shopping_cart.domain.types import ShoppingCartId
+from orders.orm_models import ORMOrderObjective
 from .constants import Membership
 
 from .models import BoosterUser as BoosterUserORM, User, ProfileCredentials as ProfileCredentialsORM
@@ -173,6 +175,26 @@ class DjangoDestinyCharacterRepository(DestinyBungieCharacterRepository):
 
 
 class DjangoProfileCredentialsRepository(ClientCredentialsRepository):
+    def list_by_booster_and_orders(
+        self,
+        booster_id: int,
+        client_order_ids: t.List[str]
+    ) -> t.List[ClientCredential]:
+
+        orders = ORMOrderObjective.objects.select_related('client_order__platform', 'client_order').filter(
+            booster__user__id=booster_id,
+        )
+
+        client_ids = set(o.client_order.client_id for o in orders)
+        platforms = set(o.client_order.platform.value for o in orders)
+
+        credentials = ProfileCredentialsORM.objects.filter(
+            platform__in=platforms,
+            owner_id__in=client_ids
+        )
+
+        return list(map(self._encode_model, credentials))
+
     def save(self, credentials: ClientCredential):
         ProfileCredentialsORM.objects.update_or_create(
             defaults=dict(

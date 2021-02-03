@@ -33,6 +33,10 @@ class ClientCredentialsRepository(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def list_by_booster_and_orders(self, booster_id: int, client_order_ids: t.List[str]) -> t.List[ClientCredential]:
+        pass
+
+    @abc.abstractmethod
     def save(self, credentials: ClientCredential):
         pass
 

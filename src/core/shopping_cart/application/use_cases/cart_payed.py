@@ -113,7 +113,8 @@ class CartPayedUseCase(ListCartItemsUseCaseMixin):
 
                 price=cart_item.price,
                 selected_option_ids=[c.id for c in cart_item.selected_options],
-                range_options=cart_item.range_options
+                range_options=cart_item.range_options,
+                client_id=client.id
             )
 
             client_order.add_client_order_objective(objective)

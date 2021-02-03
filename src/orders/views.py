@@ -26,7 +26,6 @@ from infrastructure.injectors.application import ApplicationContainer
 from orders.enum import OrderStatus
 from orders.tasks import (
     order_created,
-    order_created_admin,
     send_order_created_telegram_notification,
 )
 from profiles.models import (
@@ -239,7 +238,6 @@ def process_create_order(request):
         resp["bungie_id"] = order_bungie_profile.pk
 
     if settings.ENVIRONMENT == "prod":
-        order_created_admin.delay()
 
         order_created.delay(
             user_email=user.email,

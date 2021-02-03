@@ -1,12 +1,13 @@
 from dependency_injector import containers, providers
 
+from infrastructure.injectors.booster_dashboard_uc import BoosterDashboardUseCases
 from infrastructure.injectors.boosters import BoostersContainer
 from infrastructure.injectors.bungie import BungieContainer
 from infrastructure.injectors.celery import CeleryEventsRepositoryContainer
 from infrastructure.injectors.client_dashboard_uc import ClientDashboardUcContainer
 from infrastructure.injectors.clients import ClientsContainer
 from infrastructure.injectors.notificators import TelegramNotificationsContainer
-from infrastructure.injectors.orders import OrdersContainer, OrdersUseCases
+from infrastructure.injectors.orders import OrderStatusChangeUcContainer, OrdersContainer, OrdersUseCases
 from infrastructure.injectors.services import DestinyServiceContainer
 from infrastructure.injectors.shopping_cart import ShoppingCartContainer, ShoppingCartUseCases
 from infrastructure.injectors.use_cases import UseCases
@@ -58,6 +59,16 @@ class ApplicationContainer(containers.DeclarativeContainer):
         bungie=bungie,
         email_notificator=email_notificator
     )
+
+    orders_status_uc = providers.Container(
+        OrderStatusChangeUcContainer,
+        telegram_notifications=telegram_notifications,
+        orders=orders,
+        services=services,
+        clients=clients,
+        email_notificator=email_notificator
+    )
+
     cart_uc = providers.Container(
         ShoppingCartUseCases,
         services=services,
@@ -75,6 +86,13 @@ class ApplicationContainer(containers.DeclarativeContainer):
         clients=clients,
         orders=orders,
         boosters=boosters,
+    )
+    booster_dashboard_uc = providers.Container(
+        BoosterDashboardUseCases,
+        services=services,
+        bungie=bungie,
+        clients=clients,
+        orders=orders,
     )
     use_cases = providers.Container(
         UseCases,

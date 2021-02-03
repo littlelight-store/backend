@@ -1,5 +1,6 @@
 from django.utils.timezone import now
 from django_transitions.workflow import StateMachineMixinBase, StatusBase
+
 from transitions import Machine
 
 
@@ -43,6 +44,7 @@ class OrderObjectiveStatusSM(StatusBase):
     # Define the transitions as constants
     SET_PROCESSING = 'processing'
     SET_BOOSTER_ASSIGNED = 'booster_assigned'
+    SET_BOOSTER_ACCEPTED = 'booster_accepted'
     SET_TRYING_TO_SIGN_IN = 'trying_to_sign_in'
     SET_REQUIRED_2FA_CODE = 'required_2fa_code'
     SET_INVALID_CREDENTIALS = 'invalid_credentials'
@@ -50,8 +52,8 @@ class OrderObjectiveStatusSM(StatusBase):
     SET_PAUSE_BOOSTER = 'pause_booster'
     SET_PAUSE_CONDITION = 'pause_condition'
     SET_IN_PROGRESS = 'in_progress'
-    SET_GET_APPROVAL = 'get_approval'
     SET_COMPLETED = 'completed'
+    SET_PENDING_APPROVAL = 'pending_approval'
 
     # Give the transitions a human readable label and css class
     # which will be used in the django admin
@@ -65,8 +67,9 @@ class OrderObjectiveStatusSM(StatusBase):
         SET_PAUSE_BOOSTER: {'label': 'Set pause booster'},
         SET_PAUSE_CONDITION: {'label': 'Set pause condition'},
         SET_IN_PROGRESS: {'label': 'Set in progress'},
-        SET_GET_APPROVAL: {'label': 'Set get approval'},
         SET_COMPLETED: {'label': 'Set completed'},
+        SET_PENDING_APPROVAL: {'label': 'Set pending approval'},
+        SET_BOOSTER_ACCEPTED: {'label': 'Set booster accepted'}
     }
 
     # Construct the values to pass to the state machine constructor
@@ -85,6 +88,7 @@ class OrderObjectiveStatusSM(StatusBase):
         PENDING_APPROVAL,
         SET_REVIEW,
         DISRUPTED,
+        COMPLETED
     ]
 
     # The machines initial state
@@ -92,26 +96,56 @@ class OrderObjectiveStatusSM(StatusBase):
 
     # The transititions as a list of dictionaries
     SM_TRANSITIONS = [
+        {
+            'trigger': SET_BOOSTER_ACCEPTED,
+            'source': '*',
+            'dest': TRYING_TO_LOGIN,
+        },
+
         # trigger, source, destination
         {
             'trigger': SET_PROCESSING,
             'source': '*',
             'dest': PROCESSING,
         },
+
         {
             'trigger': SET_BOOSTER_ASSIGNED,
             'source': PROCESSING,
             'dest': AWAITING_BOOSTER,
         },
+
         {
             'trigger': SET_TRYING_TO_SIGN_IN,
             'source': '*',
             'dest': TRYING_TO_LOGIN,
         },
+
         {
-            'trigger': SET_COMPLETED,
+            'trigger': SET_IN_PROGRESS,
             'source': '*',
-            'dest': COMPLETED,
+            'dest': IN_PROGRESS,
+        },
+
+        # Branch of unsuccess auth
+        {
+            'trigger': SET_INVALID_CREDENTIALS,
+            'source': '*',
+            'dest': INVALID_CREDENTIALS,
+        },
+        {
+            'trigger': SET_REQUIRED_2FA_CODE,
+            'source': '*',
+            'dest': REQUIRED_2FA_CODE,
+        },
+
+
+        # Client must check result
+        {
+            'trigger': SET_PENDING_APPROVAL,
+            'source': '*',
+            'dest': PENDING_APPROVAL,
+            'after': 'task_pending_approval'
         },
     ]
 
@@ -151,3 +185,7 @@ class OrderObjectiveStateMachineMixin(StateMachineMixinBase):
 
     def status_updated(self):
         self.status_changed_at = now()
+
+    def task_pending_approval(self):
+        from orders.tasks import set_pending_approval_task
+        set_pending_approval_task.delay(order_objective_id=self.id)

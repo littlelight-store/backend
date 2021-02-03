@@ -29,6 +29,10 @@ class ClientOrderRepository(abc.ABC):
     def save(self, client_order: ClientOrder):
         pass
 
+    @abc.abstractmethod
+    def get_by_order_objective(self, order_objective_id: str) -> ClientOrder:
+        pass
+
 
 class OrderObjectiveRepository(abc.ABC):
     @abc.abstractmethod
@@ -48,6 +52,14 @@ class OrderObjectiveRepository(abc.ABC):
 
     @abc.abstractmethod
     def save(self, order: ClientOrderObjective):
+        pass
+
+    @abc.abstractmethod
+    def get_by_user_and_id(self, order_objective_id: str, client_id: int) -> ClientOrderObjective:
+        pass
+
+    @abc.abstractmethod
+    def list_by_booster(self, booster_id: int) -> t.List[ClientOrderObjective]:
         pass
 
 

@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     "django_object_actions",
     "simple_history",
     "ckeditor",
+    'django_celery_results',
     'django_transitions',  # this is only needed to find the templates.
 
     # my apps
@@ -264,7 +265,7 @@ SENTRY_TOKEN = os.environ.get("SENTRY_TOKEN", "")
 REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
 
 CELERY_BROKER_URL = f"redis://{REDIS_HOST}:6379"
-CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:6379"
+CELERY_RESULT_BACKEND = 'django-db'
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"

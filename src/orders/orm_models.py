@@ -129,6 +129,7 @@ class ORMOrderObjective(OrderObjectiveStateMachineMixin, models.Model):
     )
     range_options = JSONField(null=True, blank=True)
     status_changed_at = models.DateTimeField(blank=True, default=now)
+    created_at = models.DateTimeField(blank=True, default=now)
     booster = models.ForeignKey('profiles.BoosterUser', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):

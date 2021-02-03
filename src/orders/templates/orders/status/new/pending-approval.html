@@ -3,25 +3,38 @@
 {% block content %}
     <tr style="background-color: #181819; max-width: 560px;">
         <td style="line-height: 24px; font-weight: 700; text-align: center; display: block; font-size: 24px; color: #ffffff; margin-top: 37px; ">
-            Order Completed
+            Order Is Completed
         </td>
 
     </tr>
+
     <tr style="background-color: #181819; max-width: 560px;">
         <td style="font-weight: 400; font-size: 18px; text-align: center; color: #ffffff; margin: 17px 40px 29px 40px; max-width: 560px; display: block; line-height: 28px;">
-            <p>
-                The following services has been completed:
+            <p style="margin: 0">
+                The following service(s) has been completed:
             </p>
             {% for service in services %}
-                <p>{{ service }}</p>
+                <p style="margin: 0">{{ service }}</p>
             {% endfor %}
         </td>
     </tr>
 
+    <tr style="background-color: #181819; max-width: 560px;">
+        <td style="font-weight: 600; font-size: 18px; text-align: center; color: #ffffff; margin: 0 40px 10px 40px; max-width: 560px; display: block; line-height: 28px;">
+            We await for confirmation of completion
+            <br/> on your part.
+        </td>
+    </tr>
+
+    <tr style="background-color: #181819; max-width: 560px;">
+        <td style="font-weight: 400; font-size: 18px; text-align: center; color: #ffffff; margin: 17px 40px 29px 25px; max-width: 560px; display: block; line-height: 28px;">
+           To do this, please log in to the dashboard and mark the order completed after you check your account.
+        </td>
+    </tr>
 
     <tr style="background-color: #181819; max-width: 560px;">
         <td style="text-align: center">
-            <div style="display: inline-block; padding-top: 35px; padding-bottom: 35px">
+            <div style="display: inline-block; padding-bottom: 35px">
                 <a href="https://littlelight.store/dashboard" style="background: #36D39B;
                           border-radius: 80px;
                           outline: none;
@@ -36,9 +49,15 @@
                           display: table-cell;
                           vertical-align: middle;
                         ">
-                    Track Your Order
+                   Go To Dashboard
                 </a>
             </div>
+        </td>
+    </tr>
+
+    <tr style="background-color: #181819; max-width: 560px;">
+        <td style="font-weight: 400; font-size: 18px; text-align: center; color: #EB5757; margin: 0 40px 29px 40px; max-width: 560px; display: block; line-height: 28px;">
+            Attention! Your order will automatically be considered completed if you don't confirm or deny it within 48 hours.
         </td>
     </tr>
 

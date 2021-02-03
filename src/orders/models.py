@@ -7,14 +7,12 @@ from django.contrib.sites.managers import CurrentSiteManager
 from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models import Case, Count, Prefetch, Q, Value, When
-from django.utils.timezone import now
 
 from orders.enum import OrderStatus
 from orders.parse_product_options import (
     TemplateRepresentation, parse_options_from_layout_options,
     LAYOUT_TYPES,
 )
-from orders.tasks import incorrect_credentials, pending_approval, required_2_fa_code
 from profiles.constants import CharacterClasses
 
 from .orm_models import ORMShoppingCart, ORMShoppingCartItem
@@ -209,14 +207,6 @@ class Order(models.Model):
             f"Payment status: {self.payment_status} "
         )
 
-    def save(self, force_insert=False, force_update=False, *args, **kwargs):
-        super(Order, self).save(force_insert, force_update, *args, **kwargs)
-
-        if self.status != self.__original_status and self.__original_status:
-            handle_instance_status_change(self, self.status)
-
-        self.__original_status = self.status
-
     @classmethod
     def get_order_with_last_unread_messages_later_than(cls, minutes):
         current_time = dt.datetime.now()
@@ -285,57 +275,3 @@ class PvpConfigOrder(models.Model):
     to_label = models.CharField(max_length=64)
 
 
-def handle_instance_status_change(instance, status):
-    changes = {}
-
-    if status == OrderStatus.attempt_authorization.value:
-        changes["taken_at"] = now()
-
-    if status == OrderStatus.two_factor_code_required.value:
-        if instance.bungie_profile:
-            username = instance.bungie_profile.username
-            email = instance.bungie_profile.owner.email
-            required_2_fa_code.delay(email, username)
-        else:
-            logger.exception("Changing status for user without bungie id")
-
-    if status == OrderStatus.cant_sign_in.value:
-        if instance.bungie_profile:
-            username = instance.bungie_profile.username
-            email = instance.bungie_profile.owner.email
-            incorrect_credentials.delay(email, username)
-        else:
-            logger.exception("Changing status for user without bungie id")
-
-    if status == OrderStatus.pending_approval.value:
-        if instance.bungie_profile:
-            username = instance.bungie_profile.username
-            email = instance.bungie_profile.owner.email
-            pending_approval.delay(email, username, instance.order_info())
-        else:
-            logger.exception("Changing status for user without bungie id")
-
-    if status == OrderStatus.is_complete.value:
-
-        changes["complete_at"] = now()
-        changes["is_order_complete"] = True
-
-        if instance.booster_user:
-            booster_profile = instance.booster_user.booster_profile
-
-            booster_profile.balance += instance.booster_price
-            booster_profile.save()
-
-        if instance.parent_order:
-            parent_order_is_complete = True
-
-            for order in instance.parent_order.orders.all():
-                if order.status != OrderStatus.is_complete.value:
-                    parent_order_is_complete = False
-
-            if parent_order_is_complete:
-                instance.parent_order.is_complete = True
-                instance.parent_order.save()
-
-    if changes:
-        Order.objects.filter(id=instance.id).update(**changes)
