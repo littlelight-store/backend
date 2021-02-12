@@ -17,6 +17,10 @@ class ClientsRepository(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def list_by_ids(self, client_id: t.List[int]) -> t.List[Client]:
+        pass
+
+    @abc.abstractmethod
     def save(self, client: Client):
         pass
 

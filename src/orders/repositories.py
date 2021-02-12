@@ -3,11 +3,12 @@ import typing as t
 
 from django.db.models import Q
 
+from core.chat.domain.chat_room import ChatMessage, ChatRole, ChatRoom
+from core.chat.application.repository import ChatMessagesRepository, ChatRoomRepository
 from core.domain.entities.shopping_cart.exceptions import ShoppingCartDoesNotExists
 from core.order.application.exceptions import OrderDoesNotExists, OrderObjectiveNotExists
 from core.order.application.repository import OrderObjectiveRepository, ClientOrderRepository
-from core.order.domain.order import ClientOrder, ClientOrderObjective, ClientOrderStatus
-from core.order.domain.consts import OrderObjectiveStatus
+from core.order.domain.order import ClientOrder, ClientOrderObjective
 from core.shopping_cart.application.repository import (
     PromoCodeRepository, ShoppingCartItemRepository,
     ShoppingCartRepository,
@@ -15,7 +16,10 @@ from core.shopping_cart.application.repository import (
 from core.shopping_cart.domain.promo_code import PromoCode, PromoCodeDoesNotExists
 from core.shopping_cart.domain.shopping_cart import ShoppingCart, ShoppingCartItem
 from core.shopping_cart.domain.types import ShoppingCartId
-from orders.orm_models import ORMClientOrder, ORMOrderObjective, ORMShoppingCart, ORMShoppingCartItem
+from orders.orm_models import (
+    ChatMessage as ORMChatMessage, ORMClientOrder, ORMOrderObjective, ORMShoppingCart,
+    ORMShoppingCartItem,
+)
 from profiles.constants import Membership
 from services.models import ServiceConfig, PromoCode as ORMPromoCode
 
@@ -177,6 +181,12 @@ class DjangoOrderObjectiveRepository(OrderObjectiveRepository):
         )
         return list(map(self._encode, objs))
 
+    def list_by_client(self, client_id: int) -> t.List[ClientOrderObjective]:
+        objs = ORMOrderObjective.objects.filter(
+            client_order__client__id=client_id
+        )
+        return list(map(self._encode, objs))
+
     def get_by_user_and_id(self, order_objective_id: str, client_id: int) -> ClientOrderObjective:
         try:
             objective = ORMOrderObjective.objects.get(
@@ -263,3 +273,75 @@ class DjangoPromoCodeRepository(PromoCodeRepository):
             return self._encode_model(data)
         except ORMPromoCode.DoesNotExist:
             raise PromoCodeDoesNotExists()
+
+
+class DjangoChatRoomRepository(ChatRoomRepository):
+
+    def get_chat_room(
+        self,
+        user_id: int,
+        order_objective_id: str,
+        role: ChatRole
+    ) -> ChatRoom:
+        try:
+            objective = ORMOrderObjective.objects.get(
+                Q(client_order__client_id=user_id) | Q(booster__user__id=user_id),
+                id=order_objective_id,
+            )
+            chat_room = self._encode_chat_room(objective)
+            return chat_room
+        except ORMOrderObjective.DoesNotExist:
+            raise OrderObjectiveNotExists()
+
+    def list_rooms_by_user(self, user_id) -> t.List[ChatRoom]:
+        messages = ORMOrderObjective.objects.order_by(
+            'client_order__client_id',
+            'booster__user__id'
+        ).distinct(
+            'client_order__client_id',
+            'booster__user__id'
+        ).filter(
+            Q(client_order__client_id=user_id) |
+            Q(booster__user__id=user_id),
+            booster__isnull=False
+        )
+        return list(map(self._encode_chat_room, messages))
+
+    @staticmethod
+    def _encode_chat_room(order_objective: ORMOrderObjective):
+        return ChatRoom(
+            client_id=order_objective.client_order.client_id,
+            booster_id=order_objective.booster.user.first().id,
+        )
+
+
+class DjangoChatMessagesRepository(ChatMessagesRepository):
+    def create(self, message: ChatMessage):
+        ORMChatMessage.objects.create(
+            sender_id=message.sender_id,
+            receiver_id=message.receiver_id,
+            msg=message.text,
+            created_at=message.created_at
+        )
+
+    def list_messages_by_users_pair(self, client_id: int, booster_id: int) -> t.List[ChatMessage]:
+        messages = ORMChatMessage.objects.filter(
+            (
+                Q(sender=client_id) &
+                Q(receiver=booster_id)
+            ) |
+            (
+                Q(sender=booster_id) &
+                Q(receiver=client_id)
+            )
+        ).order_by('created_at')
+        return list(map(self._encode, messages))
+
+    @staticmethod
+    def _encode(message: ORMChatMessage) -> ChatMessage:
+        return ChatMessage(
+            sender_id=message.sender_id,
+            receiver_id=message.receiver_id,
+            created_at=message.created_at,
+            text=message.msg,
+        )

@@ -46,6 +46,10 @@ class DjangoBoostersRepository(AbstractBoostersRepository):
 
 
 class DjangoClientRepository(ClientsRepository):
+    def list_by_ids(self, client_ids: t.List[int]) -> t.List[Client]:
+        users = User.objects.filter(id__in=client_ids)
+        return list(map(self.encode_client, users))
+
     def get_by_id(self, client_id: int) -> Client:
         try:
             user = User.objects.get(id=client_id)
@@ -70,10 +74,18 @@ class DjangoClientRepository(ClientsRepository):
 
     @staticmethod
     def encode_client(user: User) -> Client:
+        username = 'No Username'
+
+        bungie_profile = user.bungie_profiles.first()
+        if bungie_profile:
+            username = bungie_profile.username
+
         return Client(
             _id=user.id,
             email=user.email,
-            discord=user.discord
+            discord=user.discord,
+            username=username,
+            avatar=user.booster_profile.avatar.url if user.is_booster else None
         )
 
 
@@ -245,5 +257,6 @@ class DjangoDestinyBoostersRepository(BoostersRepository):
             _id=data.id,
             username=data.in_game_profile.username,
             rating=data.rating,
-            avatar=data.avatar.url if data.avatar else None
+            avatar=data.avatar.url if data.avatar else None,
+            user_id=data.user.first().id if data.user else None
         )

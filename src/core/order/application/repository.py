@@ -62,6 +62,10 @@ class OrderObjectiveRepository(abc.ABC):
     def list_by_booster(self, booster_id: int) -> t.List[ClientOrderObjective]:
         pass
 
+    @abc.abstractmethod
+    def list_by_client(self, client_id: int) -> t.List[ClientOrderObjective]:
+        pass
+
 
 class MQEventsRepository(abc.ABC):
 

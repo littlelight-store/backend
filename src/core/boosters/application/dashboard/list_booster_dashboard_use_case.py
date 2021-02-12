@@ -99,7 +99,8 @@ class ListBoosterDashboardUseCase(BaseListOrdersDashboard):
                         account_password=current_credentials.account_password,
                         owner_id=current_credentials.owner_id,
                         username=profile.username
-                    ) if current_credentials and not objective.has_final_status() else None
+                    ) if current_credentials and not objective.has_final_status() else None,
+                    client_id=objective.client_id
                 )
             )
         return result

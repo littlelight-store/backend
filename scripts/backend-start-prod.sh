@@ -8,4 +8,4 @@ python3 /opt/app/src/manage.py migrate --noinput
 python3 /opt/app/src/manage.py collectstatic --noinput
 
 echo "Starting production server"
-cd /opt/app/src || exit ; gunicorn boosting.wsgi:application -b 0.0.0.0:8000 -w 1
+cd /opt/app/src || exit ; uvicorn boosting.asgi:application --host 0.0.0.0 --port 8000

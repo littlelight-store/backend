@@ -6,8 +6,10 @@ class Booster:
         _id: int,
         username: str,
         rating: float,
-        avatar: str
+        avatar: str,
+        user_id: int
     ):
+        self.user_id = user_id
         self.avatar = avatar
         self.rating = rating
         self.username = username

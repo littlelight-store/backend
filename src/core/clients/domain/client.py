@@ -8,11 +8,18 @@ class Client:
         self,
         _id: int,
         email: str,
-        discord: t.Optional[str] = None
+        username: str,
+        avatar: t.Optional[str] = None,
+        discord: t.Optional[str] = None,
     ):
+        self.avatar = avatar
+        self.username = username
         self.id = _id
         self.email = email
         self.discord = discord
+
+    def __repr__(self):
+        return f"Client: id={self.id} username={self.username}"
 
 
 class ClientCredential:

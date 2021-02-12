@@ -28,6 +28,7 @@ class BoosterInfo(BaseModel):
     username: str
     rating: float
     avatar: t.Optional[str]
+    user_id: int
 
 
 class ShortOrderModel(BaseModel):
@@ -46,6 +47,7 @@ class ShortOrderModel(BaseModel):
     order_id: str
     order_objective_id: str
     created_at: dt.datetime
+    client_id: int
 
     progress: int = 0
 
@@ -171,8 +173,10 @@ class ListClientDashboardUseCase(BaseListOrdersDashboard):
                         id=booster.id,
                         avatar=booster.avatar,
                         username=booster.username,
-                        rating=booster.rating
+                        rating=booster.rating,
+                        user_id=booster.user_id
                     ) if booster else None,
+                    client_id=objective.client_id,
                     created_at=objective.created_at
                 )
             )

@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
+from boosting.settings import IS_PROD, TRUSTPILOT_BCC
 from core.order.application.use_cases.order_created_notifications import OrderCreatedNotificationsUseCaseDTOInput
 from core.order.application.use_cases.status_callbacks.order_pending_approval import \
     OrderPendingApprovalCallbackDTORequest
@@ -161,8 +162,8 @@ def new_order_created(
 
     bcc = []
 
-    # if IS_PROD:
-    #     bcc = [TRUSTPILOT_BCC]
+    if IS_PROD:
+        bcc = [TRUSTPILOT_BCC]
 
     msg = EmailMultiAlternatives(subject, text_content, from_email, [to], bcc=bcc)
     msg.attach_alternative(html_content, "text/html")

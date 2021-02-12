@@ -4,6 +4,7 @@ from infrastructure.injectors.booster_dashboard_uc import BoosterDashboardUseCas
 from infrastructure.injectors.boosters import BoostersContainer
 from infrastructure.injectors.bungie import BungieContainer
 from infrastructure.injectors.celery import CeleryEventsRepositoryContainer
+from infrastructure.injectors.chat import ChatContainer
 from infrastructure.injectors.client_dashboard_uc import ClientDashboardUcContainer
 from infrastructure.injectors.clients import ClientsContainer
 from infrastructure.injectors.notificators import TelegramNotificationsContainer
@@ -45,7 +46,10 @@ class ApplicationContainer(containers.DeclarativeContainer):
     cart = providers.Container(
         ShoppingCartContainer
     )
-
+    chat = providers.Container(
+        ChatContainer,
+        clients=clients
+    )
     boosters = providers.Container(
         BoostersContainer
     )

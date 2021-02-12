@@ -1,4 +1,3 @@
-import datetime as dt
 import logging
 import typing as t
 
@@ -6,7 +5,6 @@ from django.contrib.postgres.fields import JSONField
 from django.contrib.sites.managers import CurrentSiteManager
 from django.contrib.sites.models import Site
 from django.db import models
-from django.db.models import Case, Count, Prefetch, Q, Value, When
 
 from orders.enum import OrderStatus
 from orders.parse_product_options import (
@@ -15,7 +13,7 @@ from orders.parse_product_options import (
 )
 from profiles.constants import CharacterClasses
 
-from .orm_models import ORMShoppingCart, ORMShoppingCartItem
+from .orm_models import ChatMessage, ORMShoppingCart, ORMShoppingCartItem, ORMOrderObjective
 
 logger = logging.getLogger(__name__)
 
@@ -206,66 +204,6 @@ class Order(models.Model):
             f"${self.total_price} | "
             f"Payment status: {self.payment_status} "
         )
-
-    @classmethod
-    def get_order_with_last_unread_messages_later_than(cls, minutes):
-        current_time = dt.datetime.now()
-        older_than_five = current_time - dt.timedelta(minutes=minutes)
-
-        last_unread_messages = ChatMessage.objects.filter(
-            created_at__lte=older_than_five, is_seen=False
-        )
-        messages = (
-            cls.objects.prefetch_related(
-                Prefetch("chat_messages", queryset=last_unread_messages)
-            )
-            .annotate(num_messages=Count("chat_messages"))
-            .annotate(
-                send_to=Case(
-                    When(
-                        Q(chat_messages__created_at__lte=older_than_five)
-                        & Q(chat_messages__is_seen=False)
-                        & (
-                            Q(message_sent_to_booster=False)
-                            & Q(chat_messages__role="booster")
-                        ),
-                        then=Value("booster"),
-                    ),
-                    When(
-                        Q(chat_messages__created_at__lte=older_than_five)
-                        & Q(chat_messages__is_seen=False)
-                        & (
-                            Q(message_sent_to_client=False)
-                            & Q(chat_messages__role="client")
-                        ),
-                        then=Value("client"),
-                    ),
-                    default=Value(None),
-                    output_field=models.CharField(null=True),
-                )
-            )
-            .filter((Q(send_to="client") | Q(send_to="booster")), num_messages__gte=1,)
-        )
-
-        return messages
-
-
-class ChatMessage(models.Model):
-    order = models.ForeignKey(
-        "orders.Order",
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="chat_messages",
-    )
-    msg = models.TextField()
-    created_at = models.DateTimeField()
-    username = models.CharField(max_length=200)
-    user = models.ForeignKey("profiles.User", on_delete=models.SET_NULL, null=True)
-    role = models.CharField(max_length=20)
-    is_seen = models.BooleanField(default=False)
-
-    class Meta:
-        ordering = ["-created_at"]
 
 
 class PvpConfigOrder(models.Model):

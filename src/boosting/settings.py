@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     "ckeditor",
     'django_celery_results',
     'django_transitions',  # this is only needed to find the templates.
+    "channels",
 
     # my apps
     "services.apps.ServicesConfig",
@@ -275,6 +276,24 @@ CELERY_BEAT_SCHEDULE = {
 
 SITE_ID = os.environ.get("SITE_ID", 1)
 
+ASGI_APPLICATION = 'boosting.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(REDIS_HOST, 6379)],
+        },
+    },
+}
+
+FIREBASE_SEVER_KEY = os.environ.get(
+    "FIREBASE_SERVER_KEY",
+    "AAAAGHA_gfA:APA91bGOY0SMJmcaxga0jWS_-5iFwkBr3aIJ1nteF1HGcLocX_47"
+    "h9LahZsTKbTAUGEBnJaFyt-_bcCG6vb"
+    "3sPu71x0AN_yWyUejG0rUgIcLOPHneKx23AzIWWY0DzA34osjfw_F75kV"
+)
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -330,6 +349,11 @@ if not DEBUG:
 else:
     CELERY_TASK_ALWAYS_EAGER = True
     CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
 
 DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN", 'NzM2NjQ1NzUxMjkxMTE3NzI4.Xxx00Q.P-sYlZWWF8kKO6zbMXwbpYH43Jw')
 
