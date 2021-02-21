@@ -1,6 +1,7 @@
 import logging
 
-from core.application.dtos.notifications.event_notifications import EventOrderCreatedDTO
+from boosting.settings import IS_PROD
+from core.application.dtos.notifications.event_notifications import EventChatMessageDTO, EventOrderCreatedDTO
 from core.application.repositories import EventNotificationRepository
 from core.domain.entities.booster import Booster
 from core.domain.entities.client import Client
@@ -9,7 +10,7 @@ from notifications import (
     TelegramClient, send_telegram_message_order_created, send_order_not_created,
     send_booster_assigned,
 )
-from notificators.templates.telegram import get_new_order_message
+from notificators.templates.telegram import get_new_order_message, get_new_chat_message
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,10 @@ STAS = "286739018"
 
 
 class TelegramNotificator(EventNotificationRepository):
+    def chat_message(self, param: EventChatMessageDTO):
+        # DEPRECATED
+        raise NotImplementedError()
+
     def booster_assigned(self, order: Order, booster: Booster):
         send_booster_assigned.delay(
             order_id=order.id,
@@ -61,6 +66,15 @@ class TelegramNotificator(EventNotificationRepository):
 
 
 class TelegramNotificationsRepository(EventNotificationRepository):
+    def chat_message(self, dto: EventChatMessageDTO):
+        from notifications import new_chat_message
+
+        if IS_PROD:
+            logger.info(f"Sending new chat")
+            new_chat_message.delay(
+                text=get_new_chat_message(dto)
+            )
+
     def __init__(self, client: TelegramClient):
         self.client = client
 

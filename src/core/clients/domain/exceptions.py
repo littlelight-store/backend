@@ -1,0 +1,2 @@
+class NotEnoughCashback(BaseException):
+    pass

@@ -82,6 +82,7 @@ class ORMClientOrder(models.Model):
     order_status_changed_at = models.DateTimeField()
     platform = models.ForeignKey('profiles.BungiePlatform', on_delete=models.SET_NULL, null=True, blank=True)
     promo = models.ForeignKey('services.PromoCode', on_delete=models.SET_NULL, null=True, blank=True)
+    payed_with_cashback = models.DecimalField(decimal_places=0, default=0, max_digits=6)
 
     def __str__(self):
         return f"<ClientOrder {self.id} client={self.client}>"

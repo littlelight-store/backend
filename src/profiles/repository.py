@@ -1,7 +1,7 @@
+import logging
 import typing as t
 from typing import List
 
-from django.db.models import Subquery
 from pydantic import EmailStr
 
 from core.application.repositories.order import AbstractBoostersRepository
@@ -23,6 +23,8 @@ from .constants import Membership
 
 from .models import BoosterUser as BoosterUserORM, User, ProfileCredentials as ProfileCredentialsORM
 from .orm_models import ORMDestinyBungieCharacter, ORMDestinyBungieProfile
+
+logger = logging.getLogger(__name__)
 
 
 class DjangoBoostersRepository(AbstractBoostersRepository):
@@ -59,7 +61,9 @@ class DjangoClientRepository(ClientsRepository):
 
     def save(self, client: Client):
         User.objects.filter(id=client.id).update(
-            discord=client.discord
+            discord=client.discord,
+            cashback=client.cashback,
+            last_chat_message_send_at=client.last_chat_message_send_at
         )
 
     def get_or_create_by_email(self, email: EmailStr) -> Client:
@@ -76,16 +80,21 @@ class DjangoClientRepository(ClientsRepository):
     def encode_client(user: User) -> Client:
         username = 'No Username'
 
-        bungie_profile = user.bungie_profiles.first()
-        if bungie_profile:
-            username = bungie_profile.username
+        try:
+            bungie_profile = user.destiny_profile
+            if bungie_profile:
+                username = bungie_profile.username
+        except Exception as e:
+            logger.exception(e)
 
         return Client(
             _id=user.id,
             email=user.email,
             discord=user.discord,
             username=username,
-            avatar=user.booster_profile.avatar.url if user.is_booster else None
+            cashback=user.cashback,
+            avatar=user.booster_profile.avatar.url if user.is_booster else None,
+            last_chat_message_send_at=user.last_chat_message_send_at
         )
 
 

@@ -1,4 +1,4 @@
-from core.application.dtos.notifications.event_notifications import EventOrderCreatedDTO
+from core.application.dtos.notifications.event_notifications import EventChatMessageDTO, EventOrderCreatedDTO
 
 order_created_message = """☄️ Service: {service_title}
 💰 Price: {total_price}
@@ -29,4 +29,19 @@ def get_new_order_message(dto: EventOrderCreatedDTO) -> str:
             price=o.price
         )
 
+    return fmt
+
+
+new_chat_message = """🤐
+From: ({from_}) -> To: ({to_})
+Text: {txt}
+"""
+
+
+def get_new_chat_message(dto: EventChatMessageDTO):
+    fmt = new_chat_message.format(
+        txt=dto.text,
+        from_=dto.from_,
+        to_=dto.to_
+    )
     return fmt

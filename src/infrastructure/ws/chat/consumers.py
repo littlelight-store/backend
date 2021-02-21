@@ -1,3 +1,4 @@
+import json
 import typing as t
 import logging
 
@@ -70,7 +71,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 self.self_room(user_id),
                 {
                     'type': 'send_initial_rooms',
-                    'room_data': room,
+                    'room_data': room.json(),
                     'room_name': room_group_name
                 }
             )
@@ -85,10 +86,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self._init_rooms(self.scope['user'].id)
 
     async def disconnect(self, code):
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        try:
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
+        except Exception as e:
+            logger.exception(e)
 
     # Receive message from WebSocket
     async def receive_json(self, data, **kwargs):
@@ -151,7 +155,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 room_name,
                 {
                     'type': 'chat_message',
-                    'payload': result,
+                    'payload': result.json(),
                 }
             )
 
@@ -163,8 +167,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self,
         event,
     ):
-        message = event['payload']
-        await self.send(message.json())
+        await self.send(event['payload'])
 
     async def send_initial_rooms(
         self,
@@ -172,7 +175,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     ):
         result = BaseOutputEvent(
             action='send_initial_rooms',
-            payload=event['room_data'],
+            payload=json.loads(event['room_data']),
             room_name=event['room_name']
         )
         await self.send(result.json())

@@ -1,0 +1,2 @@
+class CartCashbackNotApplied(BaseException):
+    pass

@@ -154,7 +154,8 @@ class DjangoClientOrderRepository(ClientOrderRepository):
             order_status_changed_at=order.order_status_changed_at,
             comment=order.comment,
             platform_id=order.platform,
-            promo_id=order.promo_code
+            promo_id=order.promo_code,
+            payed_with_cashback=order.cashback
         )
 
     @staticmethod
@@ -169,7 +170,8 @@ class DjangoClientOrderRepository(ClientOrderRepository):
             _id=data.id,
             client_id=data.client_id,
             payment_id=data.payment_id,
-            platform=Membership(data.platform.value) if data.platform else None
+            platform=Membership(data.platform.value) if data.platform else None,
+            cashback=data.payed_with_cashback
         )
 
 
@@ -189,10 +191,13 @@ class DjangoOrderObjectiveRepository(OrderObjectiveRepository):
 
     def get_by_user_and_id(self, order_objective_id: str, client_id: int) -> ClientOrderObjective:
         try:
-            objective = ORMOrderObjective.objects.get(
+            objective = ORMOrderObjective.objects.filter(
                 Q(client_order__client_id=client_id) | Q(booster__user__id=client_id),
                 id=order_objective_id,
-            )
+            ).first()
+            if not objective:
+                raise OrderObjectiveNotExists()
+
             return self._encode(objective)
         except ORMOrderObjective.DoesNotExist:
             raise OrderObjectiveNotExists()
@@ -284,10 +289,12 @@ class DjangoChatRoomRepository(ChatRoomRepository):
         role: ChatRole
     ) -> ChatRoom:
         try:
-            objective = ORMOrderObjective.objects.get(
+            objective = ORMOrderObjective.objects.filter(
                 Q(client_order__client_id=user_id) | Q(booster__user__id=user_id),
                 id=order_objective_id,
-            )
+            ).first()
+            if not objective:
+                raise OrderObjectiveNotExists()
             chat_room = self._encode_chat_room(objective)
             return chat_room
         except ORMOrderObjective.DoesNotExist:

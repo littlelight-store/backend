@@ -2,6 +2,8 @@
 
 from django.db import migrations
 
+from profiles.orm_models import ORMDestinyBungieProfile
+
 
 def combine_names(apps, schema_editor):
     destiny2_page = apps.get_model("pages", "GamePage").objects.get(game="destiny2")

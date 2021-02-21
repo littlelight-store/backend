@@ -1,7 +1,10 @@
 import abc
 import typing as t
 
-from core.application.dtos.notifications.event_notifications import EventOrderCreatedDTO, EventOrderCreatedOptionDTO
+from core.application.dtos.notifications.event_notifications import (
+    EventChatMessageDTO, EventOrderCreatedDTO,
+    EventOrderCreatedOptionDTO,
+)
 from core.domain.entities.booster import Booster
 from core.domain.entities.client import Client
 from core.domain.entities.order import ParentOrder, Order
@@ -22,6 +25,10 @@ class EventNotificationRepository(abc.ABC):
 
     @abc.abstractmethod
     def new_order_created(self, dto: EventOrderCreatedDTO): ...
+
+    @abc.abstractmethod
+    def chat_message(self, param: EventChatMessageDTO):
+        pass
 
 
 class ClientNotificationRepository(abc.ABC):

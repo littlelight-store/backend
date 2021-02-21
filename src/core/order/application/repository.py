@@ -72,3 +72,7 @@ class MQEventsRepository(abc.ABC):
     @abc.abstractmethod
     def new_order_created(self, client_order_id: str):
         pass
+
+    @abc.abstractmethod
+    def new_message_send(self, user_email: str, from_message: str):
+        pass

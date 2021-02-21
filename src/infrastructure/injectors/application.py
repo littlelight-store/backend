@@ -48,7 +48,10 @@ class ApplicationContainer(containers.DeclarativeContainer):
     )
     chat = providers.Container(
         ChatContainer,
-        clients=clients
+        clients=clients,
+        telegram_notifications=telegram_notifications,
+        email_notificator=email_notificator,
+        celery_events_repository=celery_events_repository
     )
     boosters = providers.Container(
         BoostersContainer

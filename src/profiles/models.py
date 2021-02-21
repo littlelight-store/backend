@@ -34,7 +34,7 @@ class User(AbstractUser):
     booster_profile = models.ForeignKey(
         'profiles.BoosterUser',
         on_delete=models.SET_NULL, related_name='user',
-        null=True, default=None,
+        null=True, default=None, blank=True
     )
 
     is_booster = models.BooleanField(default=False)
@@ -43,6 +43,11 @@ class User(AbstractUser):
 
     discord = models.CharField(max_length=100, blank=True, null=True)
     skype = models.CharField(max_length=100, blank=True, null=True)
+    cashback = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text='Cashback balance', blank=True
+    )
+    last_chat_message_send_at = models.DateTimeField(null=True, blank=True)
 
 
 class BoosterCategories(Enum):

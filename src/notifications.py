@@ -46,7 +46,9 @@ telegram_api = f"https://api.telegram.org/{BOT_TOKEN}/sendMessage"
 
 
 def send_message(json):
+    print("Sending message")
     response = requests.post(telegram_api, json=json)
+    print(response.json())
     return response
 
 
@@ -97,6 +99,12 @@ def send_booster_assigned(order_id: OrderId, booster_username: str):
 booster {booster_username} is assigned
     """
     for user_id in [ANDREY]:
+        send_message(dict(chat_id=user_id, text=text, parse_mode='Markdown'))
+
+
+@shared_task
+def new_chat_message(text: str):
+    for user_id in telegram_ids_to_send:
         send_message(dict(chat_id=user_id, text=text, parse_mode='Markdown'))
 
 

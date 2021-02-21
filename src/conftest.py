@@ -116,7 +116,8 @@ def service_client():
     return Client(
         _id=42,
         email='test@test.ru',
-        discord='#TEST'
+        discord='#TEST',
+        username='Some username'
     )
 
 

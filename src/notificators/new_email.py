@@ -16,6 +16,11 @@ class PendingApprovalNotification(BaseModel):
     user_email: str
 
 
+class DashboardChatNewMessage(BaseModel):
+    from_: str
+    user_email: str
+
+
 class DjangoEmailNotificator:
 
     @staticmethod
@@ -36,5 +41,13 @@ class DjangoEmailNotificator:
 
         pending_approval.delay(
             services=data.services,
+            user_email=data.user_email,
+        )
+
+    @staticmethod
+    def send_new_chat_message(data: DashboardChatNewMessage):
+        from orders.tasks import chat_message_unread
+        chat_message_unread.delay(
+            from_message=data.from_,
             user_email=data.user_email,
         )

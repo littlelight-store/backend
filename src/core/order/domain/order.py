@@ -7,6 +7,7 @@ from core.boosters.domain.types import BoosterId
 from core.domain.utils import generate_id
 from core.order.domain.consts import OrderObjectiveStatus
 from core.order.domain.order_states import OrderObjectiveStateMachineMixin
+from core.shopping_cart.domain.exceptions import CartCashbackNotApplied
 from profiles.constants import Membership
 
 
@@ -115,8 +116,10 @@ class ClientOrder:
         order_status_changed_at: dt.datetime,
         comment: t.Optional[str],
         platform: t.Optional[Membership],
+        cashback: Decimal = Decimal(0),
         promo_code: t.Optional[str] = None
     ):
+        self.cashback = cashback
         self.platform = platform
         self.payment_id = payment_id
         self.order_id = order_id
@@ -128,6 +131,7 @@ class ClientOrder:
         self.id = _id
         self.comment = comment
         self.promo_code = promo_code
+        self.objectives = []
 
     @classmethod
     def create(
@@ -137,10 +141,10 @@ class ClientOrder:
         payment_id: str,
         comment: t.Optional[str],
         platform: Membership,
-        total_price: Decimal = 0,
+        total_price: Decimal = Decimal(0),
         promo_code: t.Optional[str] = None
     ):
-        return cls(
+        instance = cls(
             order_id=order_id,
             total_price=total_price,
             client_id=client_id,
@@ -154,6 +158,17 @@ class ClientOrder:
             promo_code=promo_code
         )
 
+        return instance
+
+    def apply_cashback(self, cashback: Decimal):
+        self.check_can_apply_cashback(self.price, cashback)
+        self.cashback = cashback
+
+    @staticmethod
+    def check_can_apply_cashback(price: Decimal, cashback: Decimal):
+        if not price >= cashback:
+            raise CartCashbackNotApplied()
+
     def set_objectives(self, objectives: t.List[ClientOrderObjective]):
         map(self.add_client_order_objective, objectives)
 
@@ -163,3 +178,7 @@ class ClientOrder:
 
     def __str__(self):
         return f"Order: {self.id} status: {self.order_status}"
+
+    @property
+    def price(self):
+        return self.total_price - self.cashback

@@ -232,6 +232,25 @@ def pending_approval(user_email, services):
 
 
 @shared_task
+def chat_message_unread(user_email: str, from_message: str):
+    subject, from_email, to = (
+        "New Order Chat Message",
+        settings.DEFAULT_FROM_EMAIL,
+        user_email,
+    )
+
+    text_content = f"New chat message from: {from_message}"
+    html_content = render_to_string(
+        "orders/chat/new/new_chat_message.html",
+        {"sender_username": from_message, "email": user_email},
+    )
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+
+@shared_task
 def send_order_created_telegram_notification(
     platform: Membership,
     order_info: t.List[t.Dict[str, str]],

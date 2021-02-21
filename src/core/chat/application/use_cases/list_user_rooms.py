@@ -15,7 +15,7 @@ class ListUserRoomsDTOInput(BaseModel):
 
 class ChatSideDTO(BaseModel):
     id: int
-    username: str
+    username: t.Optional[str] = ""
     avatar: t.Optional[str] = None
 
 

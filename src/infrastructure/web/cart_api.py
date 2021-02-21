@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 
 from dependency_injector.wiring import Provide, inject
 from django.db import transaction
@@ -7,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.response import Response
 
+from core.clients.domain.exceptions import NotEnoughCashback
 from core.domain.entities.shopping_cart.exceptions import ShoppingCartDoesNotExists
 from core.exceptions import BaseNotExistsException
 from core.shopping_cart.application.use_cases.add_to_shopping_cart import (
@@ -14,12 +16,13 @@ from core.shopping_cart.application.use_cases.add_to_shopping_cart import (
     AddItemToShoppingCartUseCase,
 )
 from core.shopping_cart.application.use_cases.apply_promo import ApplyPromoUseCase, ApplyPromoUseCaseDTOInput
-from core.shopping_cart.application.use_cases.cart_payed import CartPayedDTORequest, CartPayedUseCase
+from core.shopping_cart.application.use_cases.cart_payed import CartPayedDTORequest
 from core.shopping_cart.application.use_cases.list_shopping_cart import (
     ListShoppingCartDTOInput,
     ListShoppingCartUseCase,
 )
 from core.shopping_cart.application.use_cases.remove_cart_item import RemoveCartItemDTOInput, RemoveCartItemUseCase
+from core.shopping_cart.domain.exceptions import CartCashbackNotApplied
 from infrastructure.injectors.application import ApplicationContainer
 from orders.services import ShoppingCartService
 
@@ -110,7 +113,8 @@ def cart_payed(
         payment_id=payment_id,
         user_email=user_email,
         user_discord=user_discord,
-        comment=comment
+        comment=comment,
+        pay_with_cashback=request.data.get('pay_with_cashback', 0)
     )
 
     try:
@@ -124,6 +128,9 @@ def cart_payed(
                 httponly=False,
             )
         return response
+    except (NotEnoughCashback, CartCashbackNotApplied) as e:
+        logger.exception(e)
+        return Response(str(e), status=400)
     except Exception as e:
         logger.exception(e)
         return Response(str(e), status=400)

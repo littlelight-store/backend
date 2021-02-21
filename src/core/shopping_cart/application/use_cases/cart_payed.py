@@ -1,5 +1,6 @@
 import logging
 import typing as t
+from decimal import Decimal
 
 from pydantic import BaseModel, EmailStr
 
@@ -8,6 +9,7 @@ from core.bungie.repositories import DestinyBungieProfileRepository
 from core.clients.application.repository import ClientCredentialsRepository, ClientsRepository
 from core.clients.domain.client import Client
 from core.clients.application.exception import ProfileCredentialsNotFound
+from core.clients.domain.exceptions import NotEnoughCashback
 from core.order.application.repository import ClientOrderRepository, MQEventsRepository, OrderObjectiveRepository
 from core.order.domain.order import ClientOrder, ClientOrderObjective
 from core.shopping_cart.application.repository import (
@@ -27,6 +29,7 @@ class CartPayedDTORequest(BaseModel):
     user_email: EmailStr
     user_discord: t.Optional[str]
     comment: t.Optional[str]
+    pay_with_cashback: Decimal
 
 
 class CartPayedDTOResponse(BaseModel):
@@ -81,8 +84,11 @@ class CartPayedUseCase(ListCartItemsUseCaseMixin):
     def execute(self, dto: CartPayedDTORequest) -> CartPayedDTOResponse:
         cart = self.get_shopping_cart_by_id(dto.cart_id)
 
-        client = self.clients_repository.get_or_create_by_email(dto.user_email)
+        client = self.clients_repository.get_or_create_by_email(dto.user_email.lower())
         client.discord = dto.user_discord
+
+        if not client.has_enough_cashback(dto.pay_with_cashback):
+            raise NotEnoughCashback()
 
         profiles = self.destiny_bungie_profile_repository.get_by_cart_id(cart.id)
         platforms = set(p.membership_type for p in profiles)
@@ -119,6 +125,10 @@ class CartPayedUseCase(ListCartItemsUseCaseMixin):
 
             client_order.add_client_order_objective(objective)
 
+        client_order.apply_cashback(dto.pay_with_cashback)
+        client.subtract_cashback(dto.pay_with_cashback)
+        client.add_cashback(client_order.total_price, percent=5)
+
         self.update_game_profiles_with_created_user(
             client.id, profile_ids
         )
@@ -128,6 +138,7 @@ class CartPayedUseCase(ListCartItemsUseCaseMixin):
 
         self.cart_repository.delete(cart.id)
         self.cart_item_repository.delete_by_shopping_cart(cart.id)
+        self.clients_repository.save(client)
 
         # TODO: Зашедулить таску на отправку данных на почту/в телегу/и т.д.
         self.events_repository.new_order_created(client_order.id)

@@ -19,3 +19,10 @@ class EventOrderCreatedDTO(BaseModel):
     options: t.List[EventOrderCreatedOptionDTO]
     user_email: str
     username: str
+
+
+class EventChatMessageDTO(BaseModel):
+    from_: str
+    to_: str
+    text: str
+
