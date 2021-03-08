@@ -11,7 +11,7 @@ from core.clients.application.repository import ClientsRepository
 from core.clients.domain.client import Client
 from core.order.application.repository import MQEventsRepository
 from core.utils.map_by_key import map_by_key
-from notificators.new_email import DashboardChatNewMessage, DjangoEmailNotificator
+from notificators.new_email import DjangoEmailNotificator
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class CreateChatMessageDTOInput(BaseModel):
     role: ChatRole
     text: str
     user_id: int
-    order_objective_id: str
+    receiver_id: int
 
 
 class CreateChatMessageDTOOutput(BaseModel):
@@ -52,7 +52,7 @@ class CreateChatMessageUseCase:
 
         chat_room = self.chat_rooms_repository.get_chat_room(
             user_id=dto.user_id,
-            order_objective_id=dto.order_objective_id,
+            user_id_2=dto.receiver_id,
             role=dto.role
         )
 

@@ -9,7 +9,7 @@ class ChatRoomRepository(abc.ABC):
     def get_chat_room(
         self,
         user_id: int,
-        order_objective_id: str,
+        user_id_2: int,
         role: ChatRole
     ) -> ChatRoom:
         pass

@@ -21,6 +21,11 @@ class DashboardChatNewMessage(BaseModel):
     user_email: str
 
 
+class PausedOrder(BaseModel):
+    booster_username: str
+    user_email: str
+
+
 class DjangoEmailNotificator:
 
     @staticmethod
@@ -38,7 +43,6 @@ class DjangoEmailNotificator:
     @staticmethod
     def send_pending_approval(data: PendingApprovalNotification):
         from orders.tasks import pending_approval
-
         pending_approval.delay(
             services=data.services,
             user_email=data.user_email,
@@ -50,4 +54,26 @@ class DjangoEmailNotificator:
         chat_message_unread.delay(
             from_message=data.from_,
             user_email=data.user_email,
+        )
+
+    @staticmethod
+    def send_paused_order(data: PausedOrder):
+        from orders.tasks import paused_order
+        paused_order.delay(
+            user_email=data.user_email,
+            booster_username=data.booster_username,
+        )
+
+    @staticmethod
+    def required_2fa_code(user_email):
+        from orders.tasks import required_2fa_code
+        required_2fa_code.delay(
+            user_email=user_email,
+        )
+
+    @staticmethod
+    def invalid_credentials(email):
+        from orders.tasks import invalid_credentials
+        invalid_credentials.delay(
+            user_email=email
         )

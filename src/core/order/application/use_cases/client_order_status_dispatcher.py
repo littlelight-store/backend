@@ -15,6 +15,8 @@ class ClientStatusDispatcherAction(str, enum.Enum):
     booster_invalid_credentials = 'booster_invalid_credentials'  # Credentials are invalid
     booster_required_2_fa = 'booster_required_2_fa'  # 2 FA Required by booster
     booster_order_completed = 'booster_order_completed'  # Booster completed an order
+    booster_pause_order = 'booster_pause_order'  # booster has paused an order
+    booster_unpause = 'booster_unpause'  # booster has unpaused an order
 
 
 class OrderStatusDispatcherDTORequest(BaseModel):
@@ -43,12 +45,17 @@ class OrderStatusDispatcher:
             order_objective.completed()
         elif action == ClientStatusDispatcherAction.accept_order:
             order_objective.booster_accepted()
-        elif action == ClientStatusDispatcherAction.booster_signed_in:
+        elif (
+            action == ClientStatusDispatcherAction.booster_signed_in or
+            action == ClientStatusDispatcherAction.booster_unpause
+        ):
             order_objective.in_progress()
         elif action == ClientStatusDispatcherAction.booster_invalid_credentials:
             order_objective.invalid_credentials()
         elif action == ClientStatusDispatcherAction.booster_required_2_fa:
             order_objective.required_2fa_code()
+        elif action == ClientStatusDispatcherAction.booster_pause_order:
+            order_objective.pause_booster()
         elif action == ClientStatusDispatcherAction.booster_order_completed:
             order_objective.status = OrderObjectiveStatus.PENDING_APPROVAL
             self.order_objectives_repository.save(order_objective)

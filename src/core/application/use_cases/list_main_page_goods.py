@@ -33,7 +33,6 @@ class ListMainPageGoodsUseCase:
         self,
         main_page_services_repository: MainPageServicesRepository
     ):
-
         self.main_page_services_repository = main_page_services_repository
 
     def execute(self) -> ListMainPageGoodsDTOOutput:

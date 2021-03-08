@@ -106,10 +106,13 @@ class ListClientDashboardUseCase(BaseListOrdersDashboard):
                 is_set = False
                 must_be_set = False
                 account_name = None
+                is_expired = False
 
                 if v in current_credentials:
-                    account_name = current_credentials[v].account_name
+                    credentials = current_credentials[v]
+                    account_name = credentials.account_name
                     is_set = True
+                    is_expired = credentials.is_expired
 
                 if v in platforms_in_orders:
                     must_be_set = not is_set
@@ -117,7 +120,7 @@ class ListClientDashboardUseCase(BaseListOrdersDashboard):
                 credentials = ProfilePlatformCredential(
                     platform=v,
                     is_set=is_set,
-                    must_be_set=must_be_set,
+                    must_be_set=is_expired or must_be_set,
                     account_name=account_name,
                     owner_id=client_id
                 )

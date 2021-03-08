@@ -89,7 +89,6 @@ class CartPayedUseCase(ListCartItemsUseCaseMixin):
 
         if not client.has_enough_cashback(dto.pay_with_cashback):
             raise NotEnoughCashback()
-
         profiles = self.destiny_bungie_profile_repository.get_by_cart_id(cart.id)
         platforms = set(p.membership_type for p in profiles)
         if len(platforms) > 1:
@@ -152,7 +151,7 @@ class CartPayedUseCase(ListCartItemsUseCaseMixin):
 
     def should_set_credentials(self, platform: Membership, client: Client) -> bool:
         try:
-            self.profile_credentials_repository.get_by_user_id_and_platform(str(platform.value), client.id)
+            self.profile_credentials_repository.get_by_user_id_and_platform(platform, client.id)
             return False
         except ProfileCredentialsNotFound:
             return True

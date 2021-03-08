@@ -57,7 +57,7 @@ class Review(models.Model):
     edit_token = models.CharField(max_length=128, default=create_edit_token)
 
     created_at = models.DateTimeField(default=dt.datetime.now)
-    last_edited = models.DateTimeField(auto_now=True)
+    last_edited = models.DateTimeField(auto_now=True, editable=True)
 
     is_posted = models.BooleanField(default=False)
     is_sent_to_user = models.BooleanField(default=False)

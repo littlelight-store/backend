@@ -4,6 +4,7 @@ import abc
 from pydantic import EmailStr
 
 from core.clients.domain.client import Client, ClientCredential
+from profiles.constants import Membership
 
 
 class ClientsRepository(abc.ABC):
@@ -27,7 +28,7 @@ class ClientsRepository(abc.ABC):
 
 class ClientCredentialsRepository(abc.ABC):
     @abc.abstractmethod
-    def get_by_user_id_and_platform(self, platform: str, user_id: int):
+    def get_by_user_id_and_platform(self, platform: Membership, user_id: int) -> ClientCredential:
         """
         @raise ProfileCredentialsNotFound if profile credentials not found
         """

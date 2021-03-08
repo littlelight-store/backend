@@ -141,6 +141,10 @@ class ORMOrderObjective(OrderObjectiveStateMachineMixin, models.Model):
             service_slug = self.service_id
         return f"OrderObjective: {service_slug} [{self.status}]"
 
+    @property
+    def client_id(self):
+        return self.client_order.client_id
+
 
 class ChatMessage(models.Model):
     objective_id = models.ForeignKey(ORMOrderObjective, on_delete=models.SET_NULL, null=True)

@@ -3,6 +3,8 @@ from dependency_injector import containers, providers
 from core.order.application.repository import ClientOrderRepository, OrderObjectiveRepository
 from core.order.application.use_cases.order_created_notifications import OrderCreatedNotificationsUseCase
 from core.order.application.use_cases.process_payment_callback_uc import ProcessPaymentCallbackUseCase
+from core.order.application.use_cases.status_callbacks.invalid_credentials import InvalidCredentialsUseCase
+from core.order.application.use_cases.status_callbacks.order_paused_callback import BoosterPausedOrderUseCase
 from core.order.application.use_cases.status_callbacks.order_pending_approval import OrderPendingApprovalCallbackUseCase
 
 
@@ -46,6 +48,7 @@ class OrderStatusChangeUcContainer(containers.DeclarativeContainer):
     clients = providers.DependenciesContainer()
     email_notificator = providers.Dependency()
     telegram_notifications = providers.DependenciesContainer()
+    boosters = providers.DependenciesContainer()
 
     order_pending_approval_uc = providers.Factory(
         OrderPendingApprovalCallbackUseCase,
@@ -55,4 +58,19 @@ class OrderStatusChangeUcContainer(containers.DeclarativeContainer):
         services_repository=services.service_rep,
         clients_repository=clients.clients_repository,
         email_notificator=email_notificator
+    )
+
+    set_paused_uc = providers.Factory(
+        BoosterPausedOrderUseCase,
+        email_notificator=email_notificator,
+        order_objectives_repository=orders.order_objectives_repository,
+        clients_repository=clients.clients_repository,
+        boosters_repository=boosters.repository
+    )
+
+    set_invalid_credentials_uc = providers.Factory(
+        InvalidCredentialsUseCase,
+        order_objectives_repository=orders.order_objectives_repository,
+        clients_repository=clients.clients_repository,
+        boosters_repository=boosters.repository
     )

@@ -26,6 +26,7 @@ class SetMembershipCredentialsUseCase:
             owner_id=dto.client_id,
             account_password=dto.credentials_value.get_secret_value(),
             account_name=dto.credentials_name.get_secret_value(),
+            is_expired=False
         )
 
         self.client_credentials_repository.save(credential)

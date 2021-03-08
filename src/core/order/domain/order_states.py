@@ -122,6 +122,13 @@ class OrderObjectiveStatusSM(StatusBase):
         },
 
         {
+            'trigger': SET_PAUSE_BOOSTER,
+            'source': '*',
+            'dest': PAUSED_BOOSTER,
+            'after': 'task_order_paused'
+        },
+
+        {
             'trigger': SET_IN_PROGRESS,
             'source': '*',
             'dest': IN_PROGRESS,
@@ -132,11 +139,13 @@ class OrderObjectiveStatusSM(StatusBase):
             'trigger': SET_INVALID_CREDENTIALS,
             'source': '*',
             'dest': INVALID_CREDENTIALS,
+            'after': 'task_invalid_credentials'
         },
         {
             'trigger': SET_REQUIRED_2FA_CODE,
             'source': '*',
             'dest': REQUIRED_2FA_CODE,
+            'after': 'task_2fa_required'
         },
 
 
@@ -189,3 +198,15 @@ class OrderObjectiveStateMachineMixin(StateMachineMixinBase):
     def task_pending_approval(self):
         from orders.tasks import set_pending_approval_task
         set_pending_approval_task.delay(order_objective_id=self.id)
+
+    def task_order_paused(self):
+        from orders.tasks import set_paused_task
+        set_paused_task.delay(order_objective_id=self.id, client_id=self.client_id)
+
+    def task_2fa_required(self):
+        from orders.tasks import required_2fa_code_task
+        required_2fa_code_task.delay(client_id=self.client_id)
+
+    def task_invalid_credentials(self):
+        from orders.tasks import invalid_credentials_task
+        invalid_credentials_task.delay(client_id=self.client_id, order_objective_id=self.id)

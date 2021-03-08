@@ -42,7 +42,7 @@ class Client:
         if not self.last_chat_message_send_at:
             return True
         diff = (now - self.last_chat_message_send_at)
-        return diff >= dt.timedelta(hours=3)
+        return diff >= dt.timedelta(hours=1)
 
     def set_message_sent(self):
         self.last_chat_message_send_at = timezone.now()
@@ -57,9 +57,15 @@ class ClientCredential:
         account_name: str,
         account_password: str,
         platform: Membership,
-        owner_id: int
+        owner_id: int,
+        is_expired: bool
     ):
         self.owner_id = owner_id
         self.platform = platform
         self.account_password = account_password
         self.account_name = account_name
+        self.is_expired = is_expired
+
+
+    def set_expired(self):
+        self.is_expired = True

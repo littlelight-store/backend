@@ -81,11 +81,11 @@ class DjangoClientRepository(ClientsRepository):
         username = 'No Username'
 
         try:
-            bungie_profile = user.destiny_profile
+            bungie_profile = user.destiny_profiles.first()
             if bungie_profile:
                 username = bungie_profile.username
         except Exception as e:
-            logger.exception(e)
+            logger.exception(e, extra={'user': user})
 
         return Client(
             _id=user.id,
@@ -93,7 +93,7 @@ class DjangoClientRepository(ClientsRepository):
             discord=user.discord,
             username=username,
             cashback=user.cashback,
-            avatar=user.booster_profile.avatar.url if user.is_booster else None,
+            avatar=user.booster_profile.avatar.url if user.is_booster and user.booster_profile else None,
             last_chat_message_send_at=user.last_chat_message_send_at
         )
 
@@ -221,6 +221,7 @@ class DjangoProfileCredentialsRepository(ClientCredentialsRepository):
             defaults=dict(
                 account_name=credentials.account_name,
                 account_password=credentials.account_password,
+                is_expired=credentials.is_expired
             ),
             owner_id=credentials.owner_id,
             platform_id=credentials.platform.value,
@@ -234,12 +235,13 @@ class DjangoProfileCredentialsRepository(ClientCredentialsRepository):
             account_name=data.account_name,
             account_password=data.account_password,
             platform=Membership(data.platform.value),
-            owner_id=data.owner.pk
+            owner_id=data.owner.pk,
+            is_expired=data.is_expired
         )
 
-    def get_by_user_id_and_platform(self, platform: str, user_id: int):
+    def get_by_user_id_and_platform(self, platform: Membership, user_id: int):
         try:
-            return self._encode_model(ProfileCredentialsORM.objects.get(platform__value=platform, owner_id=user_id))
+            return self._encode_model(ProfileCredentialsORM.objects.get(platform__value=platform.value, owner_id=user_id))
         except ProfileCredentialsORM.DoesNotExist:
             raise ProfileCredentialsNotFound()
 
@@ -262,10 +264,11 @@ class DjangoDestinyBoostersRepository(BoostersRepository):
 
     @staticmethod
     def _encode(data: BoosterUserORM) -> Booster:
+        user = data.user.first()
         return Booster(
             _id=data.id,
             username=data.in_game_profile.username,
             rating=data.rating,
             avatar=data.avatar.url if data.avatar else None,
-            user_id=data.user.first().id if data.user else None
+            user_id=user.id if user else None
         )

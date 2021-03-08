@@ -73,7 +73,8 @@ class ApplicationContainer(containers.DeclarativeContainer):
         orders=orders,
         services=services,
         clients=clients,
-        email_notificator=email_notificator
+        email_notificator=email_notificator,
+        boosters=boosters
     )
 
     cart_uc = providers.Container(

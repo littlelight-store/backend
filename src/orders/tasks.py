@@ -1,19 +1,26 @@
 import logging
 import typing as t
+from email.mime.image import MIMEImage
+from functools import lru_cache
 
 from celery import shared_task
 from dependency_injector.wiring import Provide, inject
 from django.conf import settings
+from django.contrib.staticfiles import finders
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
 from boosting.settings import IS_PROD, TRUSTPILOT_BCC
+from core.clients.application.repository import ClientsRepository
 from core.order.application.use_cases.order_created_notifications import OrderCreatedNotificationsUseCaseDTOInput
+from core.order.application.use_cases.status_callbacks.invalid_credentials import InvalidCredentialsDTORequest
+from core.order.application.use_cases.status_callbacks.order_paused_callback import BoosterPausedOrderDTORequest
 from core.order.application.use_cases.status_callbacks.order_pending_approval import \
     OrderPendingApprovalCallbackDTORequest
 from infrastructure.injectors.application import ApplicationContainer
 
 from notifications import send_telegram_message_order_created
+from notificators.new_email import DjangoEmailNotificator
 from profiles.constants import Membership
 
 logger = logging.getLogger(__name__)
@@ -21,6 +28,16 @@ logger = logging.getLogger(__name__)
 
 def get_dashboard_url():
     return f"{settings.BASE_URL}/dashboard"
+
+
+@lru_cache()
+def logo_data():
+    with open(finders.find('logo.svg'), 'rb') as f:
+        print("Opened, starting reading")
+        _logo_data = f.read()
+    logo = MIMEImage(_logo_data)
+    logo.add_header('Content-ID', '<logo>')
+    return logo
 
 
 def _build_order_msg(
@@ -83,20 +100,6 @@ def _build_incorrect_credentials_message(username):
         f"However, account information you provided is incorrect. "
         f"Please check and tell the correct one to your booster in the chat in our Dashboard"
     )
-    return text
-
-
-def _build_pending_approval(services):
-    text = (
-        f"The following services has been completed:\n\n"
-        f"{services}"
-        f"We await confirmation of completion on your part."
-        f"To do this, please log in to the dashboard and mark the order "
-        f"completed after you check your account.\n\n"
-        f"Attention!\n"
-        f"Your order will automatically be considered completed if you do not confirm or deny it within 48 hours."
-    )
-
     return text
 
 
@@ -220,7 +223,16 @@ def pending_approval(user_email, services):
         user_email,
     )
 
-    text_content = _build_pending_approval(services)
+    text = (
+        f"The following services has been completed:\n\n"
+        f"{services}"
+        f"We await confirmation of completion on your part."
+        f"To do this, please log in to the dashboard and mark the order "
+        f"completed after you check your account.\n\n"
+        f"Attention!\n"
+        f"Your order will automatically be considered completed if you do not confirm or deny it within 48 hours."
+    )
+    text_content = text
     html_content = render_to_string(
         "orders/status/new/pending-approval.html",
         {"services": services, "email": user_email},
@@ -229,6 +241,76 @@ def pending_approval(user_email, services):
     msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
     msg.attach_alternative(html_content, "text/html")
     msg.send()
+
+
+@shared_task
+def paused_order(user_email, booster_username: str):
+    subject, from_email, to = (
+        "Your order has been paused",
+        settings.DEFAULT_FROM_EMAIL,
+        user_email,
+    )
+
+    text = (
+        f"Order Is Paused"
+    )
+    text_content = text
+    html_content = render_to_string(
+        "orders/status/new/paused.html",
+        {"booster_username": booster_username, "email": user_email},
+    )
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+
+@shared_task
+def required_2fa_code(user_email):
+    subject, from_email, to = (
+        "Attention, 2FA code is required",
+        settings.DEFAULT_FROM_EMAIL,
+        user_email,
+    )
+
+    text = (
+        "Our booster is trying to log in to your account However, we need a 2FA code to start or continue with your order."
+        "Please check your email / phone and tell the code to your booster in the chat in our Dashboard:"
+    )
+    text_content = text
+    html_content = render_to_string(
+        "orders/status/new/2fa.html",
+        {"email": user_email},
+    )
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+
+@shared_task
+def invalid_credentials(user_email):
+    subject, from_email, to = (
+        "Attention, invalid in-game credentials",
+        settings.DEFAULT_FROM_EMAIL,
+        user_email,
+    )
+
+    text = (
+        "Our booster is trying to log in to your account. However, account information you provided is incorrect."
+        "Please check and set the correct credentials in dashboard and let yor booster know you did"
+    )
+    text_content = text
+    html_content = render_to_string(
+        "orders/status/new/2fa.html",
+        {"email": user_email},
+    )
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+
 
 
 @shared_task
@@ -297,3 +379,47 @@ def set_pending_approval_task(
         order_objective_id=order_objective_id
     )
     uc.execute(dto)
+
+
+@shared_task
+@inject
+def set_paused_task(
+    order_objective_id,
+    client_id,
+    uc=Provide[ApplicationContainer.orders_status_uc.set_paused_uc]
+):
+    logger.info(f'Starting task set_paused with {order_objective_id}')
+
+    dto = BoosterPausedOrderDTORequest(
+        order_objective_id=order_objective_id,
+        client_id=client_id
+    )
+    uc.execute(dto)
+
+
+@shared_task
+@inject
+def required_2fa_code_task(
+    client_id,
+    notificator: DjangoEmailNotificator = Provide[ApplicationContainer.email_notificator],
+    clients_repository: ClientsRepository = Provide[ApplicationContainer.clients.clients_repository]
+):
+    client = clients_repository.get_by_id(client_id)
+    notificator.required_2fa_code(client.email)
+
+
+@shared_task
+@inject
+def invalid_credentials_task(
+    order_objective_id,
+    client_id,
+    uc=Provide[ApplicationContainer.orders_status_uc.set_paused_uc]
+):
+    logger.info(f'Starting task invalid_credentials with {client_id}')
+
+    dto = InvalidCredentialsDTORequest(
+        client_id=client_id,
+        order_objective_id=order_objective_id
+    )
+    uc.execute(dto)
+

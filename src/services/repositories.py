@@ -122,10 +122,11 @@ class DjangoMainPageServicesRepository(MainPageServicesRepository):
         res = {}
 
         for obj in objs:
-            res[ServiceGroupTag(
+            tag = ServiceGroupTag(
                 value=obj.value,
                 name=obj.name
-            )] = list(map(self.encode_service, obj.services.filter(is_hidden=False)))
+            )
+            res[tag] = list(map(self.encode_service, obj.services.filter(is_hidden=False)))
 
         return res
 

@@ -285,13 +285,16 @@ class DjangoChatRoomRepository(ChatRoomRepository):
     def get_chat_room(
         self,
         user_id: int,
-        order_objective_id: str,
+        user_id_2: int,
         role: ChatRole
     ) -> ChatRoom:
         try:
             objective = ORMOrderObjective.objects.filter(
-                Q(client_order__client_id=user_id) | Q(booster__user__id=user_id),
-                id=order_objective_id,
+                Q(
+                    Q(client_order__client_id=user_id) & Q(booster__user__id=user_id_2),
+                ) | Q(
+                    Q(client_order__client_id=user_id_2) & Q(booster__user__id=user_id),
+                )
             ).first()
             if not objective:
                 raise OrderObjectiveNotExists()

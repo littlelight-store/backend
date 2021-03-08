@@ -129,7 +129,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     ):
         message = data['message']
         role = data['role']
-        order_objective_id = data['order_objective_id']
+        receiver_id = data['receiver_id']
         room_name = data['room_name']
         user_id = data['user_id']
 
@@ -139,7 +139,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     text=message,
                     role=role,
                     user_id=user_id,
-                    order_objective_id=order_objective_id
+                    receiver_id=receiver_id
                 )
             ))
         except OrderObjectiveNotExists:

@@ -24,10 +24,10 @@ class ORMDestinyBungieProfile(models.Model):
 
     ))
     username = models.CharField(max_length=100, null=True, blank=True)
-    client_id = models.OneToOneField(
+    client_id = models.ForeignKey(
         'profiles.User', null=True, blank=True,
         on_delete=models.SET_NULL,
-        related_name='destiny_profile',
+        related_name='destiny_profiles',
     )
 
     @property
