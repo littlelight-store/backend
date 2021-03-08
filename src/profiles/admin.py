@@ -46,13 +46,7 @@ admin.site.register(BungieID)
 
 @admin.register(ProfileCredentials)
 class ProfileCredentialsAdmin(admin.ModelAdmin):
-    fields = [
-        "account_name",
-        "account_password",
-        "owner",
-        "platform",
-        "is_expired"
-    ]
+    pass
 
 
 @admin.register(ORMDestinyBungieProfile)

@@ -49,13 +49,16 @@ class ClientDashboardCredentialsAPI(BaseClientAPI):
     def patch(
         self,
         request,
-        uc: SetMembershipCredentialsUseCase = Provide[ApplicationContainer.client_dashboard_uc.set_membership_credentials_uc]
+        uc: SetMembershipCredentialsUseCase = Provide[
+            ApplicationContainer.client_dashboard_uc.set_membership_credentials_uc
+        ]
     ):
         dto = SetMembershipCredentialsDTOInput(
             client_id=request.user.id,
             credentials_name=request.data.get('credentials_name'),
             credentials_value=request.data.get('credentials_value'),
-            platform=request.data.get('platform')
+            platform=request.data.get('platform'),
+            has_second_factor=request.data.get('has_second_factor', False)
         )
         res = uc.execute(dto)
 

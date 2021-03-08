@@ -58,14 +58,16 @@ class ClientCredential:
         account_password: str,
         platform: Membership,
         owner_id: int,
-        is_expired: bool
+        is_expired: bool,
+        has_second_factor: bool
     ):
         self.owner_id = owner_id
         self.platform = platform
         self.account_password = account_password
         self.account_name = account_name
         self.is_expired = is_expired
-
+        self.has_second_factor = has_second_factor
 
     def set_expired(self):
+        """Нужен для того, чтобы отметить данные как протухшие"""
         self.is_expired = True

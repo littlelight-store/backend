@@ -221,7 +221,8 @@ class DjangoProfileCredentialsRepository(ClientCredentialsRepository):
             defaults=dict(
                 account_name=credentials.account_name,
                 account_password=credentials.account_password,
-                is_expired=credentials.is_expired
+                is_expired=credentials.is_expired,
+                has_second_factor=credentials.has_second_factor
             ),
             owner_id=credentials.owner_id,
             platform_id=credentials.platform.value,
@@ -236,7 +237,8 @@ class DjangoProfileCredentialsRepository(ClientCredentialsRepository):
             account_password=data.account_password,
             platform=Membership(data.platform.value),
             owner_id=data.owner.pk,
-            is_expired=data.is_expired
+            is_expired=data.is_expired,
+            has_second_factor=data.has_second_factor
         )
 
     def get_by_user_id_and_platform(self, platform: Membership, user_id: int):

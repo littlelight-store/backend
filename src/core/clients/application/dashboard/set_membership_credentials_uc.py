@@ -11,6 +11,7 @@ class SetMembershipCredentialsDTOInput(BaseModel):
     client_id: int
     credentials_value: SecretStr
     credentials_name: SecretStr
+    has_second_factor: bool
 
 
 class SetMembershipCredentialsUseCase:
@@ -26,7 +27,8 @@ class SetMembershipCredentialsUseCase:
             owner_id=dto.client_id,
             account_password=dto.credentials_value.get_secret_value(),
             account_name=dto.credentials_name.get_secret_value(),
-            is_expired=False
+            is_expired=False,
+            has_second_factor=dto.has_second_factor
         )
 
         self.client_credentials_repository.save(credential)

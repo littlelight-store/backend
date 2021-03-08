@@ -156,6 +156,10 @@ class ProfileCredentials(models.Model):
         default=False
     )
 
+    has_second_factor = models.BooleanField(
+        default=False
+    )
+
     @classmethod
     def create_or_update_platform_credentials(cls, user, platform, account_name, account_password):
         instance, _ = cls.objects.update_or_create(
