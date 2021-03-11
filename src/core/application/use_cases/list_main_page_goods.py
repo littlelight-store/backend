@@ -26,6 +26,7 @@ class ServicesByGroupTags(BaseModel):
 
 class ListMainPageGoodsDTOOutput(BaseModel):
     categories: t.List[ServicesByGroupTags]
+    total_orders_in_progress: int
 
 
 class ListMainPageGoodsUseCase:
@@ -48,5 +49,6 @@ class ListMainPageGoodsUseCase:
                     slug=c.slug,
                     item_image=c.image
                 ) for c in services]
-            ) for group, services in mapped_short_services.items()]
+            ) for group, services in mapped_short_services.items()],
+            total_orders_in_progress=5
         )

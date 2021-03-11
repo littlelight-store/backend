@@ -1,16 +1,14 @@
 from dependency_injector import containers, providers
 
 from core.application.repositories import NotificationsRepository, OrderRepo
-from core.application.repositories.order import BoostersRepo, ReviewRepo
+from core.application.repositories.order import BoostersRepo
 from core.application.use_cases.assign_booster_to_order import AssignBoosterToOrderUseCase
-from core.application.use_cases.create_order import CreateOrderUseCase
 from core.shopping_cart.application.use_cases.add_to_shopping_cart import AddItemToShoppingCartUseCase
 from core.shopping_cart.application.use_cases.apply_promo import ApplyPromoUseCase
 from core.shopping_cart.application.use_cases.cart_payed import CartPayedUseCase
 from core.shopping_cart.application.use_cases.list_shopping_cart import ListShoppingCartUseCase
 from core.shopping_cart.application.use_cases.remove_cart_item import RemoveCartItemUseCase
 from infrastructure.injectors.service import DestinyServiceInjectors
-from notificators.discord import DiscordNotificator
 from notificators.email import EmailNotificator
 from notificators.telegram import TelegramNotificator
 from orders.repositories import (
@@ -23,33 +21,16 @@ from profiles.repository import (
     DjangoBoostersRepository, DjangoClientRepository, DjangoDestinyBungieProfileRepository,
     DjangoDestinyCharacterRepository, DjangoProfileCredentialsRepository
 )
-from reviews.repository import DjangoReviewRepository
 
 
 class NotificationService(containers.DeclarativeContainer):
     event_notifications_repo = providers.Singleton(TelegramNotificator)
     client_notifications_repo = providers.Singleton(EmailNotificator)
-    order_executors_notification_repository = providers.Singleton(DiscordNotificator)
 
     notifications_repo = providers.Factory(
         NotificationsRepository,
         event_repository=event_notifications_repo,
         client_notification_repository=client_notifications_repo,
-        order_executors_notification_repository=order_executors_notification_repository
-    )
-
-
-class CreateOrderService(containers.DeclarativeContainer):
-    db_order_repo = providers.Singleton(DjangoOrderRepository)
-    db_review_repo = providers.Singleton(DjangoReviewRepository)
-    order_repo = providers.Singleton(OrderRepo, db_repo=db_order_repo)
-    reviews_repo = providers.Singleton(ReviewRepo, db_repo=db_review_repo)
-
-    use_case = providers.Factory(
-        CreateOrderUseCase,
-        order_repo=order_repo,
-        reviews_repo=reviews_repo,
-        notification_repo=NotificationService.notifications_repo
     )
 
 

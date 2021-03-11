@@ -1,18 +1,14 @@
 import datetime as dt
-import enum
 
-from discord import Webhook, RequestsWebhookAdapter, Embed, Colour
+from discord import Colour, Embed, RequestsWebhookAdapter, Webhook
 from pydantic import BaseModel
 
-from core.application.repositories.notifications import OrderExecutorsNotificationRepository
-from core.domain.entities.order import ParentOrder, Order
+from core.application.repositories.notifications import (
+    OrderCreatedDTO,
+    OrderExecutorsNotificationRepository,
+)
+from notificators.constants import Category
 from profiles.constants import Membership
-
-
-class Category(str, enum.Enum):
-    pvp = 'pvp'
-    pve = 'pve'
-
 
 BOT_NAME = '⚙️ LittleLight.orders'
 
@@ -40,26 +36,18 @@ class MessageBuilderParamsDTOOutput(BaseModel):
         arbitrary_types_allowed = True
 
 
-class MessageBuilder:
-    order: Order
-    parent_order: ParentOrder
-
-    def set_params(self, order: Order, parent_order: ParentOrder):
-        self.order = order
-        self.parent_order = parent_order
-        return self
-
-    def _create_embed(self):
+class NewMessageBuilder:
+    def _create_embed(self, dto: OrderCreatedDTO):
         embed = Embed(
-            title=f'[{self.order.id}] *{self.order.service.title}*',
+            title=f'[{dto.order_id}] *{dto.service_title}*',
             colour=Colour.green(),
             timestamp=dt.datetime.utcnow(),
         )
 
-        for service in self.order.service.options_representation:
+        for service in dto.selected_services:
             embed.add_field(name='🚩', value=service.description, inline=True)
 
-        embed.add_field(name='💰', value=f'*${str(self.order.booster_price)}*', inline=False)
+        embed.add_field(name='💰', value=f'*${dto.booster_price}*', inline=False)
 
         embed.add_field(name='Add any reaction to accept an order', value=f'😉', inline=False)
 
@@ -67,10 +55,10 @@ class MessageBuilder:
 
         return embed
 
-    def execute(self) -> MessageBuilderParamsDTOOutput:
+    def execute(self, dto: OrderCreatedDTO) -> MessageBuilderParamsDTOOutput:
         return MessageBuilderParamsDTOOutput(
             content=f'',
-            embed=self._create_embed()
+            embed=self._create_embed(dto)
         )
 
 
@@ -87,21 +75,39 @@ def webhook_factory(platform: Membership, category: Category):
     return Webhook.from_url(f"https://discordapp.com/api/webhooks/{web_hook}", adapter=RequestsWebhookAdapter())
 
 
-class DiscordNotificator(OrderExecutorsNotificationRepository):
+# class DiscordNotificator(OrderExecutorsNotificationRepository):
+#     def __init__(
+#         self,
+#         message_builder: type(MessageBuilder) = MessageBuilder,
+#         _web_hook_factory=webhook_factory
+#     ):
+#
+#         self.message_builder = message_builder
+#         self._web_hook_factory = _web_hook_factory
+#
+#     def order_created(self, parent_order: ParentOrder):
+#         for order in parent_order.orders:
+#             channel_category = _get_channels_category(order.service.category)
+#             web_hook = self._web_hook_factory(parent_order.platform, category=channel_category)
+#
+#             message = self.message_builder().set_params(order=order, parent_order=parent_order).execute()
+#
+#             web_hook.send(message.content, username=BOT_NAME, embed=message.embed)
+
+
+class NewDiscordNotificator(OrderExecutorsNotificationRepository):
     def __init__(
         self,
-        message_builder: type(MessageBuilder) = MessageBuilder,
-        _web_hook_factory=webhook_factory
+        message_builder: type(NewMessageBuilder),
+        _web_hook_factory=webhook_factory,
     ):
-
-        self.message_builder = message_builder
         self._web_hook_factory = _web_hook_factory
+        self.message_builder = message_builder
 
-    def order_created(self, parent_order: ParentOrder):
-        for order in parent_order.orders:
-            channel_category = _get_channels_category(order.service.category)
-            web_hook = self._web_hook_factory(parent_order.platform, category=channel_category)
-
-            message = self.message_builder().set_params(order=order, parent_order=parent_order).execute()
-
-            web_hook.send(message.content, username=BOT_NAME, embed=message.embed)
+    def order_created(self, dto: OrderCreatedDTO):
+        webhook = self._web_hook_factory(
+            platform=dto.platform,
+            category=dto.category
+        )
+        message = self.message_builder().execute(dto)
+        webhook.send(message.content, username=BOT_NAME, embed=message.embed)

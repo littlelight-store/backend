@@ -71,3 +71,7 @@ class ClientCredential:
     def set_expired(self):
         """Нужен для того, чтобы отметить данные как протухшие"""
         self.is_expired = True
+
+    def set_password(self, password: str):
+        self.account_password = password
+        self.is_expired = False

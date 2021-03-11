@@ -17,6 +17,7 @@ class ShoppingCartUseCases(containers.DeclarativeContainer):
     orders = providers.DependenciesContainer()
     cart = providers.DependenciesContainer()
     celery_events_repository = providers.DependenciesContainer()
+    discord_notificator = providers.Dependency()
 
     cart_payed_uc = providers.Factory(
         CartPayedUseCase,
@@ -30,5 +31,6 @@ class ShoppingCartUseCases(containers.DeclarativeContainer):
         promo_code_repository=services.promo_code_repository,
         destiny_bungie_profile_repository=bungie.profiles_repository,
         profile_credentials_repository=clients.clients_credentials_repository,
-        events_repository=celery_events_repository.repository
+        events_repository=celery_events_repository.repository,
+        order_executors_repository=discord_notificator
     )

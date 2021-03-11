@@ -12,6 +12,7 @@ from infrastructure.injectors.orders import OrderStatusChangeUcContainer, Orders
 from infrastructure.injectors.services import DestinyServiceContainer
 from infrastructure.injectors.shopping_cart import ShoppingCartContainer, ShoppingCartUseCases
 from infrastructure.injectors.use_cases import UseCases
+from notificators.discord import NewDiscordNotificator
 from notificators.new_email import DjangoEmailNotificator
 
 
@@ -29,6 +30,9 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     email_notificator = providers.Factory(
         DjangoEmailNotificator
+    )
+    discord_notificator = providers.Factory(
+        NewDiscordNotificator
     )
 
     services = providers.Container(
@@ -84,7 +88,8 @@ class ApplicationContainer(containers.DeclarativeContainer):
         clients=clients,
         orders=orders,
         cart=cart,
-        celery_events_repository=celery_events_repository
+        celery_events_repository=celery_events_repository,
+        discord_notificator=discord_notificator
     )
 
     client_dashboard_uc = providers.Container(

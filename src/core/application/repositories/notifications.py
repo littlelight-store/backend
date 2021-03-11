@@ -1,5 +1,8 @@
+import datetime as dt
 import abc
 import typing as t
+
+from pydantic import BaseModel
 
 from core.application.dtos.notifications.event_notifications import (
     EventChatMessageDTO, EventOrderCreatedDTO,
@@ -10,6 +13,8 @@ from core.domain.entities.client import Client
 from core.domain.entities.order import ParentOrder, Order
 from core.order.domain.order import ClientOrder
 from core.shopping_cart.application.use_cases.dto import CartObjectiveDataDTO
+from notificators.constants import Category
+from profiles.constants import Membership
 
 
 class EventNotificationRepository(abc.ABC):
@@ -37,10 +42,20 @@ class ClientNotificationRepository(abc.ABC):
     def order_created(self, parent_order: ParentOrder, client: Client): ...
 
 
+class OrderCreatedDTO(BaseModel):
+    service_title: str
+    created_at: dt.datetime
+    selected_services: list
+    order_id: str
+    platform: Membership
+    category: Category
+    booster_price: str
+
+
 class OrderExecutorsNotificationRepository(abc.ABC):
 
     @abc.abstractmethod
-    def order_created(self, parent_order: ParentOrder): ...
+    def order_created(self, dto: OrderCreatedDTO): ...
 
 
 class NotificationsRepository:
@@ -48,16 +63,13 @@ class NotificationsRepository:
         self,
         event_repository: EventNotificationRepository,
         client_notification_repository: ClientNotificationRepository,
-        order_executors_notification_repository: OrderExecutorsNotificationRepository
     ):
-        self.order_executors_notification_repository = order_executors_notification_repository
         self.client_notification_repository = client_notification_repository
         self.event_repository = event_repository
 
     def order_created(self, parent_order: ParentOrder, client: Client, with_notification: bool = False):
         if with_notification:
             self.event_repository.order_created(parent_order, client)
-        self.order_executors_notification_repository.order_created(parent_order)
         self.client_notification_repository.order_created(parent_order, client)
 
     def new_order_created(
