@@ -24,3 +24,7 @@ class BaseBoosterException(BaseException):
 
 class BoosterNotExists(BaseBoosterException):
     pass
+
+
+class UserIsNotBooster(BaseBoosterException):
+    pass

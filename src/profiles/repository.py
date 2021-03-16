@@ -2,6 +2,7 @@ import logging
 import typing as t
 from typing import List
 
+from django.db.models import QuerySet
 from pydantic import EmailStr
 
 from core.application.repositories.order import AbstractBoostersRepository
@@ -15,7 +16,7 @@ from core.clients.application.repository import ClientCredentialsRepository, Cli
 from core.clients.domain.client import Client, ClientCredential
 from core.domain.entities.booster import Booster as OldBooster
 from core.domain.entities.shopping_cart.exceptions import CharacterDoesNotExists
-from core.domain.exceptions import BoosterNotExists
+from core.domain.exceptions import BoosterNotExists, UserIsNotBooster
 from core.domain.object_values import ClientId, DiscordId
 from core.shopping_cart.domain.types import ShoppingCartId
 from orders.orm_models import ORMOrderObjective
@@ -93,7 +94,7 @@ class DjangoClientRepository(ClientsRepository):
             discord=user.discord,
             username=username,
             cashback=user.cashback,
-            avatar=user.booster_profile.avatar.url if user.is_booster and user.booster_profile else None,
+            avatar=user.booster_profile.avatar.url if user.booster_profile is not None else None,
             last_chat_message_send_at=user.last_chat_message_send_at
         )
 
@@ -255,10 +256,24 @@ class DjangoProfileCredentialsRepository(ClientCredentialsRepository):
 
 
 class DjangoDestinyBoostersRepository(BoostersRepository):
+
+    @staticmethod
+    def base_query() -> QuerySet:
+        return BoosterUserORM.objects.select_related('in_game_profile')
+
+    def get_by_user_id(self, user_id: int) -> Booster:
+        try:
+            user = User.objects.get(id=user_id)
+            if user.booster_profile and user.is_booster:
+                return self._encode(user.booster_profile)
+            else:
+                raise UserIsNotBooster()
+        except User.DoesNotExist:
+            raise BoosterNotExists()
+
     def list_by_client_orders(self, client_id: ClientId) -> t.List[Booster]:
         boosters = (
-            BoosterUserORM.objects
-            .select_related('in_game_profile')
+            self.base_query()
             .filter(ormorderobjective__client_order__client_id=client_id)
             .distinct()
         )

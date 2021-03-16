@@ -16,6 +16,7 @@ class OrdersUseCases(containers.DeclarativeContainer):
     clients = providers.DependenciesContainer()
     bungie = providers.DependenciesContainer()
     orders = providers.DependenciesContainer()
+    discord_notificator = providers.Dependency()
 
     order_created_notifications_uc = providers.Factory(
         OrderCreatedNotificationsUseCase,
@@ -27,7 +28,8 @@ class OrdersUseCases(containers.DeclarativeContainer):
         destiny_bungie_profile_repository=bungie.profiles_repository,
         destiny_character_repository=bungie.characters_repository,
         clients_repository=clients.clients_repository,
-        email_notificator=email_notificator
+        email_notificator=email_notificator,
+        order_executors_repository=discord_notificator
     )
 
     process_payment_callback_uc = providers.Factory(

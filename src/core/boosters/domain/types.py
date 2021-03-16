@@ -1,1 +1,1 @@
-BoosterId = str
+BoosterId = int

@@ -1,6 +1,9 @@
 import datetime as dt
+from unittest.mock import MagicMock
+
 import pytest
 
+from core.boosters.domain.entities import Booster
 from core.bungie.entities import DestinyBungieProfile
 from core.bungie.test_utils import generate_destiny_bungie_profile, generate_destiny_character
 from core.clients.domain.client import Client
@@ -21,14 +24,15 @@ def client_order():
 
 
 @pytest.fixture()
-def order_objective(client_order, service, destiny_character, destiny_profile):
+def order_objective(client_order, service, destiny_character, destiny_profile, client_id):
     def func(**kwargs):
         profile = destiny_profile()
         data = dict(
             client_order=client_order,
             service=service,
             destiny_character=destiny_character(destiny_profile=profile),
-            destiny_profile=profile
+            destiny_profile=profile,
+            client_id=client_id
         )
         data.update(kwargs)
 
@@ -200,7 +204,19 @@ def client_id():
 def client(client_id):
     return Client(
         email='some-tets-client-email@gmail.com',
-        _id=client_id
+        _id=client_id,
+        username='Test username'
+    )
+
+
+@pytest.fixture()
+def booster():
+    return Booster(
+        _id=123,
+        user_id=321,
+        rating=4.5,
+        avatar='',
+        username='Test booster username'
     )
 
 
@@ -212,3 +228,27 @@ def db_client(client: Client) -> User:
         email=client.email,
         is_booster=False
     )
+
+
+@pytest.fixture()
+def boosters_repository_mock():
+    from core.boosters.application.repository import BoostersRepository
+    return MagicMock(spec=BoostersRepository)
+
+
+@pytest.fixture()
+def clients_repository_mock():
+    from core.clients.application.repository import ClientsRepository
+    return MagicMock(spec=ClientsRepository)
+
+
+@pytest.fixture()
+def order_objectives_repository_mock():
+    from core.order.application.repository import OrderObjectiveRepository
+    return MagicMock(spec=OrderObjectiveRepository)
+
+
+@pytest.fixture()
+def order_objective_mock():
+    from core.order.domain.order import ClientOrderObjective
+    return MagicMock(spec=ClientOrderObjective)

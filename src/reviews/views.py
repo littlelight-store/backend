@@ -1,5 +1,5 @@
 from django.http import Http404
-from rest_framework.generics import GenericAPIView, ListAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, ListCreateAPIView, RetrieveAPIView
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.response import Response
 

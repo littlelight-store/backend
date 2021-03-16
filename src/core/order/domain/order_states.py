@@ -111,7 +111,7 @@ class OrderObjectiveStatusSM(StatusBase):
 
         {
             'trigger': SET_BOOSTER_ASSIGNED,
-            'source': PROCESSING,
+            'source': '*',
             'dest': AWAITING_BOOSTER,
         },
 

@@ -3,6 +3,7 @@ import datetime as dt
 from discord import Colour, Embed, RequestsWebhookAdapter, Webhook
 from pydantic import BaseModel
 
+from boosting.settings import BASE_URL
 from core.application.repositories.notifications import (
     OrderCreatedDTO,
     OrderExecutorsNotificationRepository,
@@ -36,6 +37,10 @@ class MessageBuilderParamsDTOOutput(BaseModel):
         arbitrary_types_allowed = True
 
 
+def get_dashboard_accept_order_link(order_id):
+    return f"{BASE_URL}/dashboard?action=bind-order&param={order_id}"
+
+
 class NewMessageBuilder:
     def _create_embed(self, dto: OrderCreatedDTO):
         embed = Embed(
@@ -45,11 +50,16 @@ class NewMessageBuilder:
         )
 
         for service in dto.selected_services:
-            embed.add_field(name='🚩', value=service.description, inline=True)
+            embed.add_field(name='🚩', value=f"{service.description} — ${service.price}", inline=True)
 
-        embed.add_field(name='💰', value=f'*${dto.booster_price}*', inline=False)
+        embed.add_field(name='👤 Client: ', value=f'*{dto.client_username}*', inline=False)
+        embed.add_field(name='💰 You will get: ', value=f'*${dto.booster_price}*', inline=False)
+        embed.add_field(
+            name="🐲 Follow link to accept an order: (Must be authorized)",
+            value=get_dashboard_accept_order_link(dto.order_id)
+        )
 
-        embed.add_field(name='Add any reaction to accept an order', value=f'😉', inline=False)
+        # embed.add_field(name='Add any reaction to accept an order', value=f'😉', inline=False)
 
         embed.set_footer(text='LittleLight.store')
 
@@ -75,30 +85,10 @@ def webhook_factory(platform: Membership, category: Category):
     return Webhook.from_url(f"https://discordapp.com/api/webhooks/{web_hook}", adapter=RequestsWebhookAdapter())
 
 
-# class DiscordNotificator(OrderExecutorsNotificationRepository):
-#     def __init__(
-#         self,
-#         message_builder: type(MessageBuilder) = MessageBuilder,
-#         _web_hook_factory=webhook_factory
-#     ):
-#
-#         self.message_builder = message_builder
-#         self._web_hook_factory = _web_hook_factory
-#
-#     def order_created(self, parent_order: ParentOrder):
-#         for order in parent_order.orders:
-#             channel_category = _get_channels_category(order.service.category)
-#             web_hook = self._web_hook_factory(parent_order.platform, category=channel_category)
-#
-#             message = self.message_builder().set_params(order=order, parent_order=parent_order).execute()
-#
-#             web_hook.send(message.content, username=BOT_NAME, embed=message.embed)
-
-
 class NewDiscordNotificator(OrderExecutorsNotificationRepository):
     def __init__(
         self,
-        message_builder: type(NewMessageBuilder),
+        message_builder: type(NewMessageBuilder) = NewMessageBuilder,
         _web_hook_factory=webhook_factory,
     ):
         self._web_hook_factory = _web_hook_factory

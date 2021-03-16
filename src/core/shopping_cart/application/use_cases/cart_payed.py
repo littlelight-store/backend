@@ -56,7 +56,6 @@ class CartPayedUseCase(ListCartItemsUseCaseMixin):
         profile_credentials_repository: ClientCredentialsRepository,
         destiny_bungie_profile_repository: DestinyBungieProfileRepository,
         events_repository: MQEventsRepository,
-        order_executors_repository: OrderExecutorsNotificationRepository
     ):
         self.events_repository = events_repository
         self.order_objective_repository = order_objective_repository
@@ -68,7 +67,6 @@ class CartPayedUseCase(ListCartItemsUseCaseMixin):
         self.service_configs_repository = service_configs_repository
         self.profile_credentials_repository = profile_credentials_repository
         self.destiny_bungie_profile_repository = destiny_bungie_profile_repository
-        self.order_executors_repository = order_executors_repository
 
         super().__init__(
             cart_repository,
@@ -146,17 +144,6 @@ class CartPayedUseCase(ListCartItemsUseCaseMixin):
 
         # TODO: Зашедулить таску на отправку данных на почту/в телегу/и т.д.
         self.events_repository.new_order_created(client_order.id)
-
-        dto = OrderCreatedDTO(
-            service_title="Trials Of Osiris",
-            created_at=datetime.now(),
-            order_id='69',
-            selected_services=[],
-            platform=Membership.PS4,
-            category=Category.pvp,
-            booster_price="50"
-        )
-        self.order_executors_repository.order_created(dto)
 
         return CartPayedDTOResponse(
             success=True,

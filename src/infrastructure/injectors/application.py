@@ -68,7 +68,8 @@ class ApplicationContainer(containers.DeclarativeContainer):
         services=services,
         clients=clients,
         bungie=bungie,
-        email_notificator=email_notificator
+        email_notificator=email_notificator,
+        discord_notificator=discord_notificator
     )
 
     orders_status_uc = providers.Container(
@@ -89,7 +90,6 @@ class ApplicationContainer(containers.DeclarativeContainer):
         orders=orders,
         cart=cart,
         celery_events_repository=celery_events_repository,
-        discord_notificator=discord_notificator
     )
 
     client_dashboard_uc = providers.Container(
@@ -106,6 +106,8 @@ class ApplicationContainer(containers.DeclarativeContainer):
         bungie=bungie,
         clients=clients,
         orders=orders,
+        boosters=boosters,
+        telegram_notifications=telegram_notifications
     )
     use_cases = providers.Container(
         UseCases,

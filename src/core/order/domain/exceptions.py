@@ -1,0 +1,2 @@
+class OrderIsAlreadyAccepted(BaseException):
+    pass

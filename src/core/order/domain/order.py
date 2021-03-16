@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from core.boosters.domain.types import BoosterId
 from core.domain.utils import generate_id
+from core.order.domain.exceptions import OrderIsAlreadyAccepted
 from core.order.domain.consts import OrderObjectiveStatus
 from core.order.domain.order_states import OrderObjectiveStateMachineMixin
 from core.shopping_cart.domain.exceptions import CartCashbackNotApplied
@@ -64,6 +65,21 @@ class ClientOrderObjective(OrderObjectiveStateMachineMixin):
             OrderObjectiveStatus.COMPLETED
         ]
         return self.status in final_statuses
+
+    def get_booster_price(self, booster_percent: Decimal):
+        discount = self.price * (booster_percent / 100)
+        return Decimal(self.price - discount)
+
+    @property
+    def has_booster(self):
+        return self.booster_id is not None
+
+    def assign_booster(self, booster_id: BoosterId):
+        if not self.has_booster:
+            self.booster_id = booster_id
+            self.booster_assigned()
+        else:
+            raise OrderIsAlreadyAccepted()
 
     @classmethod
     def create(

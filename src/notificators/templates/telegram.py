@@ -1,4 +1,5 @@
 from core.application.dtos.notifications.event_notifications import EventChatMessageDTO, EventOrderCreatedDTO
+from core.application.repositories.notifications import BoosterAssignedNotificationDTO
 
 order_created_message = """☄️ Service: {service_title}
 💰 Price: {total_price}
@@ -43,5 +44,19 @@ def get_new_chat_message(dto: EventChatMessageDTO):
         txt=dto.text,
         from_=dto.from_,
         to_=dto.to_
+    )
+    return fmt
+
+
+booster_assigned_message = """🤖
+Booster {booster_username} has took the order {order_id} ({order_service})
+"""
+
+
+def get_booster_assigned_message(dto: BoosterAssignedNotificationDTO):
+    fmt = booster_assigned_message.format(
+        booster_username=dto.booster_username,
+        order_id=dto.order_id,
+        order_service=dto.order_service
     )
     return fmt

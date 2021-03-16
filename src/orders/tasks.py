@@ -19,9 +19,7 @@ from core.order.application.use_cases.status_callbacks.order_pending_approval im
     OrderPendingApprovalCallbackDTORequest
 from infrastructure.injectors.application import ApplicationContainer
 
-from notifications import send_telegram_message_order_created
 from notificators.new_email import DjangoEmailNotificator
-from profiles.constants import Membership
 
 logger = logging.getLogger(__name__)
 
@@ -330,27 +328,6 @@ def chat_message_unread(user_email: str, from_message: str):
     msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
     msg.attach_alternative(html_content, "text/html")
     msg.send()
-
-
-@shared_task
-def send_order_created_telegram_notification(
-    platform: Membership,
-    order_info: t.List[t.Dict[str, str]],
-    user_email: str,
-    username: str
-):
-    for order in order_info:
-        send_telegram_message_order_created(
-            service=order["title"],
-            price=order["price"],
-            platform=platform,
-            char_class=order["character_class"],
-            promo=order["promo"],
-            option=order["option"],
-            options=order["options"],
-            user_email=user_email,
-            username=username
-        )
 
 
 @shared_task

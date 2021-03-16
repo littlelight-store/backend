@@ -177,6 +177,13 @@ class DjangoClientOrderRepository(ClientOrderRepository):
 
 class DjangoOrderObjectiveRepository(OrderObjectiveRepository):
 
+    def get_by_id(self, order_objective_id: str) -> ClientOrderObjective:
+        try:
+            obj = ORMOrderObjective.objects.get(id=order_objective_id)
+            return self._encode(obj)
+        except ORMOrderObjective.DoesNotExist:
+            raise OrderObjectiveNotExists()
+
     def list_by_booster(self, booster_id: int) -> t.List[ClientOrderObjective]:
         objs = ORMOrderObjective.objects.filter(
             booster__user__id=booster_id
@@ -205,7 +212,8 @@ class DjangoOrderObjectiveRepository(OrderObjectiveRepository):
     def save(self, order: ClientOrderObjective):
         ORMOrderObjective.objects.filter(id=order.id).update(
             status=order.status,
-            status_changed_at=order.status_changed_at
+            status_changed_at=order.status_changed_at,
+            booster_id=order.booster_id
         )
 
     def list_by_orders(self, order_ids: t.List[str]):
