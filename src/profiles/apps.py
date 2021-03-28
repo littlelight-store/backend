@@ -9,7 +9,7 @@ class ProfilesConfig(AppConfig):
         from boosting import container
         from profiles.repository import (
             DjangoDestinyBungieProfileRepository, DjangoDestinyCharacterRepository, DjangoClientRepository,
-            DjangoProfileCredentialsRepository, DjangoDestinyBoostersRepository
+            DjangoProfileCredentialsRepository, DjangoDestinyBoostersRepository, DjangoNotificationTokensRepository
         )
 
         container.clients.clients_repository.override(providers.Factory(
@@ -17,6 +17,9 @@ class ProfilesConfig(AppConfig):
         ))
         container.clients.clients_credentials_repository.override(providers.Factory(
             DjangoProfileCredentialsRepository
+        ))
+        container.clients.notification_tokens_repository.override(providers.Factory(
+            DjangoNotificationTokensRepository
         ))
         container.bungie.characters_repository.override(providers.Factory(
             DjangoDestinyCharacterRepository

@@ -23,6 +23,7 @@ services:
       EMAIL_HOST_PASSWORD: 'cyczyT-teqfu0-dadxuf'
       BASE_AUTH_URL: 'http://localhost:3000'
       REDIS_HOST: 'redis'
+      PUSH_GOOGLE_TOKEN: 'AAAAGHA_gfA:APA91bGOY0SMJmcaxga0jWS_-5iFwkBr3aIJ1nteF1HGcLocX_47h9LahZsTKbTAUGEBnJaFyt-_bcCG6vb3sPu71x0AN_yWyUejG0rUgIcLOPHneKx23AzIWWY0DzA34osjfw_F75kV'
     ports:
       - "8000:8000"
     depends_on:

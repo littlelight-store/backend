@@ -80,3 +80,7 @@ class MQEventsRepository(abc.ABC):
     @abc.abstractmethod
     def new_message_send(self, user_email: str, from_message: str):
         pass
+
+    @abc.abstractmethod
+    def new_message_push_send(self, receiver_id: int, message: str):
+        pass

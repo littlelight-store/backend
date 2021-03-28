@@ -19,9 +19,11 @@ from celery.schedules import crontab
 from dependency_injector import containers
 from dependency_injector.containers import DynamicContainer
 from easy_thumbnails.conf import Settings as thumbnail_settings
+from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -341,7 +343,7 @@ except ImportError:
 if not DEBUG:
     sentry_sdk.init(
         dsn=f"https://{SENTRY_TOKEN}@sentry.io/1390435",
-        integrations=[DjangoIntegration()],
+        integrations=[DjangoIntegration(), CeleryIntegration()],
         environment=ENVIRONMENT,
     )
     # SESSION_ENGINE = "django.contrib.sessions.backends.cache"
@@ -361,3 +363,6 @@ TRUSTPILOT_BCC = os.environ.get(
     'TRUSTPILOT_BCC',
     'littlelight.store+18c17bb215@invite.trustpilot.com'
 )
+
+google_fcm_token = os.environ.get('PUSH_GOOGLE_TOKEN')
+google_fcm_notifications_dry = False

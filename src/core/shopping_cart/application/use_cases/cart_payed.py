@@ -1,11 +1,9 @@
 import logging
 import typing as t
-from datetime import datetime
 from decimal import Decimal
 
 from pydantic import BaseModel, EmailStr
 
-from core.application.repositories.notifications import OrderCreatedDTO, OrderExecutorsNotificationRepository
 from core.application.repositories.services import ServiceConfigsRepository, ServiceRepository
 from core.bungie.repositories import DestinyBungieProfileRepository
 from core.clients.application.repository import ClientCredentialsRepository, ClientsRepository
@@ -20,7 +18,6 @@ from core.shopping_cart.application.repository import (
 )
 from core.shopping_cart.application.use_cases.list_cart_items_mixin import ListCartItemsUseCaseMixin
 from core.shopping_cart.domain.shopping_cart import ShoppingCartItem
-from notificators.constants import Category
 from profiles.constants import Membership
 
 logger = logging.getLogger(__name__)

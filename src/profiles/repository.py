@@ -12,8 +12,15 @@ from core.bungie.entities import DestinyBungieProfile, DestinyCharacter
 from core.bungie.exceptions import DestinyProfileDoesNotExists
 from core.bungie.repositories import DestinyBungieCharacterRepository, DestinyBungieProfileRepository
 from core.clients.application.exception import ProfileCredentialsNotFound, UserNotFound
-from core.clients.application.repository import ClientCredentialsRepository, ClientsRepository
-from core.clients.domain.client import Client, ClientCredential
+from core.clients.application.repository import (
+    ClientCredentialsRepository, ClientNotificationTokensRepository,
+    ClientsRepository,
+)
+from core.clients.domain.client import (
+    Client, ClientCredential, ClientNotificationToken, NotificationTokenPurpose,
+    NotificationTokenType,
+)
+from core.clients.domain.exceptions import ClientNotificationTokenNotFound
 from core.domain.entities.booster import Booster as OldBooster
 from core.domain.entities.shopping_cart.exceptions import CharacterDoesNotExists
 from core.domain.exceptions import BoosterNotExists, UserIsNotBooster
@@ -23,7 +30,10 @@ from orders.orm_models import ORMOrderObjective
 from .constants import Membership
 
 from .models import BoosterUser as BoosterUserORM, User, ProfileCredentials as ProfileCredentialsORM
-from .orm_models import ORMDestinyBungieCharacter, ORMDestinyBungieProfile
+from .orm_models import (
+    ORMDestinyBungieCharacter, ORMDestinyBungieProfile, ORMNotificationsPurposes,
+    ORMNotificationsToken,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -288,4 +298,57 @@ class DjangoDestinyBoostersRepository(BoostersRepository):
             rating=data.rating,
             avatar=data.avatar.url if data.avatar else None,
             user_id=user.id if user else None
+        )
+
+
+class DjangoNotificationTokensRepository(ClientNotificationTokensRepository):
+    def save(self, token: ClientNotificationToken):
+        token_created, created = ORMNotificationsToken.objects.update_or_create(
+            defaults=dict(
+                issued_at=token.issued_at,
+                touched_at=token.touched_at,
+                is_active=token.is_active,
+                deactivated_at=token.deactivated_at
+            ),
+            source=token.source.value,
+            client_id=token.client_id,
+            token=token.token,
+        )
+
+        if created:
+            for purpose in ORMNotificationsPurposes.objects.all():
+                if purpose.value in token.purposes:
+                    token_created.purposes.add(purpose)
+
+    def get_by_user_and_token(self, user_id: int, token: str) -> ClientNotificationToken:
+        try:
+            result = ORMNotificationsToken.objects.get(
+                client_id=user_id,
+                token=token
+            )
+            return self._encode(result)
+        except ORMNotificationsToken.DoesNotExist:
+            raise ClientNotificationTokenNotFound()
+
+    def list_active_by_client_and_purpose(
+        self, user_id: int, purpose: NotificationTokenPurpose
+    ) -> t.List[ClientNotificationToken]:
+        tokens = ORMNotificationsToken.objects.filter(
+            client_id=user_id,
+            purposes__value=purpose.value,
+            is_active=True
+        )
+        return list(map(self._encode, tokens))
+
+    @staticmethod
+    def _encode(data: ORMNotificationsToken) -> ClientNotificationToken:
+        return ClientNotificationToken(
+            client_id=data.client_id,
+            token=data.token,
+            issued_at=data.issued_at,
+            touched_at=data.touched_at,
+            source=NotificationTokenType(data.source),
+            purposes=[NotificationTokenPurpose(p.value) for p in data.purposes.all()],
+            deactivated_at=data.deactivated_at,
+            is_active=data.is_active
         )

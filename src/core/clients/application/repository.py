@@ -3,7 +3,7 @@ import abc
 
 from pydantic import EmailStr
 
-from core.clients.domain.client import Client, ClientCredential
+from core.clients.domain.client import Client, ClientCredential, ClientNotificationToken, NotificationTokenPurpose
 from profiles.constants import Membership
 
 
@@ -45,3 +45,16 @@ class ClientCredentialsRepository(abc.ABC):
     def save(self, credentials: ClientCredential):
         pass
 
+
+class ClientNotificationTokensRepository(abc.ABC):
+    @abc.abstractmethod
+    def save(self, token: ClientNotificationToken):
+        pass
+
+    @abc.abstractmethod
+    def get_by_user_and_token(self, user_id: int, token: str) -> ClientNotificationToken:
+        pass
+
+    @abc.abstractmethod
+    def list_active_by_client_and_purpose(self, user_id: int, purpose: NotificationTokenPurpose) -> t.List[ClientNotificationToken]:
+        pass

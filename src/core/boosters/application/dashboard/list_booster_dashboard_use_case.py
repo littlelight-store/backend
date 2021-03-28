@@ -29,6 +29,7 @@ class ClientCredentials(BaseModel):
     account_name: str
     account_password: str
     username: str
+    has_second_factor: bool
 
 
 class BoosterShortOrderModelDTOOutput(ShortOrderModel):
@@ -98,7 +99,8 @@ class ListBoosterDashboardUseCase(BaseListOrdersDashboard):
                         account_name=current_credentials.account_name,
                         account_password=current_credentials.account_password,
                         owner_id=current_credentials.owner_id,
-                        username=profile.username
+                        username=profile.username,
+                        has_second_factor=current_credentials.has_second_factor
                     ) if current_credentials and not objective.has_final_status() else None,
                     client_id=objective.client_id
                 )

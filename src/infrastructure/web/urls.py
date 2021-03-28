@@ -1,11 +1,12 @@
-
 from django.urls import path
 
-from . import service_api
-from . import cart_api
+from . import cart_api, service_api
 from .auth_api import DashboardEmailAuthorization, GetAuthTokenCookie, TokenLogoutAPI
 from .booster_dashboard_api import BoosterDashboardAPI, BoosterDashboardAcceptOrderAPI
-from .client_dashboard_api import ClientDashboardAPI, ClientDashboardCredentialsAPI, ClientDashboardStatusDispatcherAPI
+from .client_dashboard_api import (
+    ClientDashboardAPI, ClientDashboardCredentialsAPI, ClientDashboardStatusDispatcherAPI,
+    DashboardSetNotificationTokenAPI,
+)
 
 urlpatterns = [
     path(f'list-main-page', service_api.list_main_page_goods),
@@ -20,6 +21,7 @@ urlpatterns = [
     path('dashboard/booster/accept-order/<str:order_id>/', BoosterDashboardAcceptOrderAPI.as_view()),
     path('dashboard-credentials', ClientDashboardCredentialsAPI.as_view()),
     path('dashboard/status-dispatch', ClientDashboardStatusDispatcherAPI.as_view()),
+    path('dashboard/set-notifications-token', DashboardSetNotificationTokenAPI.as_view()),
     path('auth/get-auth-token', GetAuthTokenCookie.as_view()),
     path('auth/auth-email-token', DashboardEmailAuthorization.as_view()),
     path('auth/logout', TokenLogoutAPI.as_view())

@@ -58,6 +58,7 @@ class ProfilePlatformCredential(BaseModel):
     is_set: bool
     account_name: t.Optional[str]
     owner_id: int
+    has_second_factor: bool
 
 
 class ListClientDashboardUseCaseDTOOutput(BaseModel):
@@ -107,12 +108,14 @@ class ListClientDashboardUseCase(BaseListOrdersDashboard):
                 must_be_set = False
                 account_name = None
                 is_expired = False
+                has_second_factor = False
 
                 if v in current_credentials:
                     credentials = current_credentials[v]
                     account_name = credentials.account_name
                     is_set = True
                     is_expired = credentials.is_expired
+                    has_second_factor = credentials.has_second_factor
 
                 if v in platforms_in_orders:
                     must_be_set = not is_set
@@ -122,7 +125,8 @@ class ListClientDashboardUseCase(BaseListOrdersDashboard):
                     is_set=is_set,
                     must_be_set=is_expired or must_be_set,
                     account_name=account_name,
-                    owner_id=client_id
+                    owner_id=client_id,
+                    has_second_factor=bool(has_second_factor)
                 )
                 result.append(credentials)
 

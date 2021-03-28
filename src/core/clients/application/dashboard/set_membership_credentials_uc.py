@@ -38,5 +38,6 @@ class SetMembershipCredentialsUseCase:
             must_be_set=False,
             platform=credential.platform,
             owner_id=credential.owner_id,
-            account_name=credential.account_name
+            account_name=credential.account_name,
+            has_second_factor=credential.has_second_factor
         )

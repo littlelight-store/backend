@@ -1,5 +1,8 @@
+import logging
+
 from dependency_injector.wiring import Provide, inject
 from django.http import JsonResponse
+from pydantic import ValidationError
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -7,6 +10,10 @@ from rest_framework.views import APIView
 from core.clients.application.dashboard.list_client_dashboard_use_case import (
     ListClientDashboardUseCase,
     ListClientDashboardUseCaseDTOInput,
+)
+from core.clients.application.dashboard.save_notification_token import (
+    SaveNotificationTokenDTORequest,
+    SaveNotificationTokenUseCase,
 )
 from core.clients.application.dashboard.set_membership_credentials_uc import (
     SetMembershipCredentialsDTOInput,
@@ -19,6 +26,9 @@ from core.order.application.use_cases.client_order_status_dispatcher import (
 )
 from infrastructure.injectors.application import ApplicationContainer
 from infrastructure.web.service_api import fix_images_url
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseClientAPI(APIView):
@@ -86,3 +96,32 @@ class ClientDashboardStatusDispatcherAPI(BaseClientAPI):
             return JsonResponse(data={
                 'status': 'not found'
             }, status=404)
+
+
+class DashboardSetNotificationTokenAPI(BaseClientAPI):
+    @inject
+    def put(
+        self,
+        request,
+        uc: SaveNotificationTokenUseCase = Provide[
+            ApplicationContainer.client_dashboard_uc.set_token_notification_token_uc
+        ]
+    ):
+
+        try:
+            dto = SaveNotificationTokenDTORequest(
+                client_id=request.user.id,
+                token=request.data.get('token'),
+                source=request.data.get('source'),
+                purposes=request.data.get('purposes')
+            )
+
+            uc.execute(dto)
+            return JsonResponse(data={'status': 'success'}, status=201)
+        except BaseNotExistsException:
+            return JsonResponse(data={
+                'status': 'not found'
+            }, status=404)
+        except ValidationError as e:
+            logger.exception('Validation params error')
+            return JsonResponse(data=e.errors(), status=400)

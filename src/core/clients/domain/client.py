@@ -1,5 +1,7 @@
-import typing as t
 import datetime as dt
+import enum
+import typing as t
+from dataclasses import dataclass
 from decimal import Decimal
 
 from django.utils import timezone
@@ -75,3 +77,47 @@ class ClientCredential:
     def set_password(self, password: str):
         self.account_password = password
         self.is_expired = False
+
+
+class NotificationTokenType(str, enum.Enum):
+    firebase = 'firebase'
+
+
+class NotificationTokenPurpose(str, enum.Enum):
+    chat_messages = 'chat_messages'
+    order_status = 'order_status'
+
+
+@dataclass()
+class ClientNotificationToken:
+    client_id: int
+    token: str
+    source: NotificationTokenType
+    touched_at: dt.datetime
+    issued_at: dt.datetime
+    purposes: t.List[NotificationTokenPurpose]
+    is_active: bool
+    deactivated_at: t.Optional[dt.datetime] = None
+
+    @classmethod
+    def create(
+        cls,
+        client_id: int, token: str, source: NotificationTokenType,
+        purposes: t.List[NotificationTokenPurpose]
+    ):
+        return cls(
+            client_id=client_id,
+            token=token,
+            source=source,
+            touched_at=dt.datetime.now(),
+            issued_at=dt.datetime.now(),
+            purposes=purposes,
+            is_active=True,
+        )
+
+    def deactivate(self):
+        self.is_active = False
+        self.deactivated_at = timezone.now()
+
+    def touch(self):
+        self.touched_at = timezone.now()

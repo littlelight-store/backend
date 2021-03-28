@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from .constants import CharacterClasses, Membership
-from .orm_models import ORMDestinyBungieProfile, ORMDestinyBungieCharacter
+from .orm_models import ORMDestinyBungieProfile, ORMDestinyBungieCharacter, ORMNotificationsPurposes, ORMNotificationsToken
 
 
 class BungiePlatform(models.Model):

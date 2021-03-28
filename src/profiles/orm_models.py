@@ -1,5 +1,6 @@
 from django.db import models
 
+from core.clients.domain.client import NotificationTokenPurpose, NotificationTokenType
 from profiles.constants import CharacterClasses, Membership
 
 
@@ -58,4 +59,27 @@ class ORMDestinyBungieCharacter(models.Model):
     @property
     def game_class(self):
         return CharacterClasses(self.character_class)
+
+
+class ORMNotificationsPurposes(models.Model):
+    value = models.CharField(max_length=52, primary_key=True)
+    repr = models.CharField(max_length=52)
+
+
+class ORMNotificationsToken(models.Model):
+    class SourceChoices(models.TextChoices):
+        firebase = NotificationTokenType.firebase.value
+
+    client = models.ForeignKey(
+        'profiles.User',
+        on_delete=models.CASCADE,
+        related_name='tokens'
+    )
+    token = models.CharField(max_length=256)
+    source = models.CharField(max_length=32, choices=SourceChoices.choices)
+    purposes = models.ManyToManyField(ORMNotificationsPurposes)
+    issued_at = models.DateTimeField()
+    touched_at = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    deactivated_at = models.DateTimeField(default=None, null=True)
 

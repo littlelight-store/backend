@@ -1,5 +1,6 @@
 import datetime as dt
 
+import requests
 from discord import Colour, Embed, RequestsWebhookAdapter, Webhook
 from pydantic import BaseModel
 
@@ -79,10 +80,24 @@ def _get_channels_category(category: str) -> Category:
         return Category.pve
 
 
+HTTP_TIMEOUT = 30
+
+
+class TimeoutRequestsSession(requests.Session):
+    def request(self, *args, **kwargs):
+        kwargs.setdefault('timeout', HTTP_TIMEOUT)
+        kwargs.setdefault('timeout', HTTP_TIMEOUT)
+        return super(TimeoutRequestsSession, self).request(*args, **kwargs)
+
+
 def webhook_factory(platform: Membership, category: Category):
     web_hook = web_hooks[platform][category]
+    session = TimeoutRequestsSession()
 
-    return Webhook.from_url(f"https://discordapp.com/api/webhooks/{web_hook}", adapter=RequestsWebhookAdapter())
+    return Webhook.from_url(
+        f"https://discordapp.com/api/webhooks/{web_hook}",
+        adapter=RequestsWebhookAdapter(sleep=False, session=session)
+    )
 
 
 class NewDiscordNotificator(OrderExecutorsNotificationRepository):

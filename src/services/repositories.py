@@ -163,9 +163,6 @@ class DjangoServiceDetailedInfoRepository(ServiceDetailedInfoRepository):
             slug=service_slug,
         )
 
-        print(len(obj.reviews.all()))
-        print(obj.feedbacks_count)
-
         return self._encode_model(
             obj,
             completed_count=obj.completed_count + obj.feedbacks_count,

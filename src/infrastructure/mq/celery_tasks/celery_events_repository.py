@@ -3,6 +3,10 @@ from core.order.application.repository import MQEventsRepository
 
 class CeleryEventsRepository(MQEventsRepository):
 
+    def new_message_push_send(self, receiver_id: int, message: str):
+        from orders.tasks import new_chat_message
+        new_chat_message.delay(client_id=receiver_id, message=message)
+
     def new_order_created(self, client_order_id: str):
         from orders.tasks import order_created_notifications
         order_created_notifications.delay(client_order_id=client_order_id)
@@ -13,3 +17,4 @@ class CeleryEventsRepository(MQEventsRepository):
             user_email=user_email,
             from_message=from_message
         )
+

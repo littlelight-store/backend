@@ -82,6 +82,11 @@ class CreateChatMessageUseCase:
             )
             receiver.set_message_sent()
 
+        self.events_repository.new_message_push_send(
+            receiver_id=receiver.id,
+            message=message.text
+        )
+
         self.users_repository.save(receiver)
         self.chat_messages_repository.create(message)
         self.event_repository.chat_message(event_data)

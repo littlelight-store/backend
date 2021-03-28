@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 
 from boosting.settings import IS_PROD, TRUSTPILOT_BCC
 from core.clients.application.repository import ClientsRepository
+from core.clients.application.send_web_push import SendWebPushDTORequest, SendWebPushUseCase
 from core.order.application.use_cases.order_created_notifications import OrderCreatedNotificationsUseCaseDTOInput
 from core.order.application.use_cases.status_callbacks.invalid_credentials import InvalidCredentialsDTORequest
 from core.order.application.use_cases.status_callbacks.order_paused_callback import BoosterPausedOrderDTORequest
@@ -332,16 +333,36 @@ def chat_message_unread(user_email: str, from_message: str):
 
 @shared_task
 @inject
+def new_chat_message(
+    client_id: int,
+    message: str,
+    uc: SendWebPushUseCase = Provide[ApplicationContainer.create_chat_message_uc]
+):
+    dto = SendWebPushDTORequest(
+        client_id=client_id,
+        body=message,
+        title='New order chat message',
+        purpose='chat_messages',
+        click_action=get_dashboard_url()
+    )
+    uc.execute(dto)
+
+
+@shared_task
+@inject
 def order_created_notifications(
     client_order_id: str,
     uc=Provide[ApplicationContainer.orders_uc.order_created_notifications_uc]
 ):
     # "9b843b81d3c6437cb05b5213d02448eb"
-    uc.execute(
-        OrderCreatedNotificationsUseCaseDTOInput(
-            client_order_id=client_order_id
+    try:
+        uc.execute(
+            OrderCreatedNotificationsUseCaseDTOInput(
+                client_order_id=client_order_id
+            )
         )
-    )
+    except Exception as e:
+        logger.exception('Order is not fuken sent')
 
 
 @shared_task

@@ -9,6 +9,7 @@ from core.application.dtos.notifications.event_notifications import (
     EventChatMessageDTO, EventOrderCreatedDTO,
     EventOrderCreatedOptionDTO,
 )
+from core.clients.domain.client import ClientNotificationToken
 from core.domain.entities.client import Client
 from core.domain.entities.order import ParentOrder
 from notificators.constants import Category
@@ -61,3 +62,19 @@ class OrderExecutorsNotificationRepository(abc.ABC):
 
     @abc.abstractmethod
     def order_created(self, dto: OrderCreatedDTO): ...
+
+
+class WebPushNotificationDTO(BaseModel):
+    body: t.Optional[str]
+    title: t.Optional[str]
+    click_action: t.Optional[str]
+
+
+class WebPushNotifications(abc.ABC):
+    @abc.abstractmethod
+    def send_push(self, token: ClientNotificationToken, dto: WebPushNotificationDTO):
+        """
+        @raise: ClientTokenIsInvalid — if token is rejected
+        @raise: ErrorWhileSendingToken — if error occurred while sending token
+        """
+        pass

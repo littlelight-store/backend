@@ -156,6 +156,11 @@ class OrderObjectiveStatusSM(StatusBase):
             'dest': PENDING_APPROVAL,
             'after': 'task_pending_approval'
         },
+        {
+            'trigger': SET_COMPLETED,
+            'source': PENDING_APPROVAL,
+            'dest': COMPLETED
+        }
     ]
 
 

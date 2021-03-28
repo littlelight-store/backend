@@ -1,7 +1,9 @@
 from django.contrib import admin
 
-from .models import BoosterUser, BungiePlatform, ProfileCredentials, User, BungieID
-
+from .models import (
+    BoosterUser, BungieID, BungiePlatform, ORMNotificationsPurposes, ORMNotificationsToken,
+    ProfileCredentials, User,
+)
 # Register your models here.
 from .orm_models import ORMDestinyBungieProfile
 
@@ -42,6 +44,8 @@ class BoostingUserAdmin(admin.ModelAdmin):
 admin.site.register(BoosterUser, BoostingUserAdmin)
 admin.site.register(BungiePlatform)
 admin.site.register(BungieID)
+admin.site.register(ORMNotificationsToken)
+admin.site.register(ORMNotificationsPurposes)
 
 
 @admin.register(ProfileCredentials)
