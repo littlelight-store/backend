@@ -124,5 +124,6 @@ class ApplicationContainer(containers.DeclarativeContainer):
     )
     use_cases = providers.Container(
         UseCases,
-        services=services
+        services=services,
+        orders=orders
     )

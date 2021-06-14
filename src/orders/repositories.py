@@ -8,6 +8,7 @@ from core.chat.application.repository import ChatMessagesRepository, ChatRoomRep
 from core.domain.entities.shopping_cart.exceptions import ShoppingCartDoesNotExists
 from core.order.application.exceptions import OrderDoesNotExists, OrderObjectiveNotExists
 from core.order.application.repository import OrderObjectiveRepository, ClientOrderRepository
+from core.order.domain.consts import OrderObjectiveStatus
 from core.order.domain.order import ClientOrder, ClientOrderObjective
 from core.shopping_cart.application.repository import (
     PromoCodeRepository, ShoppingCartItemRepository,
@@ -176,6 +177,20 @@ class DjangoClientOrderRepository(ClientOrderRepository):
 
 
 class DjangoOrderObjectiveRepository(OrderObjectiveRepository):
+
+    def list_pending_approval_orders(self) -> t.List[ClientOrderObjective]:
+        res = ORMOrderObjective.objects.filter(
+            status=OrderObjectiveStatus.PENDING_APPROVAL
+        )
+        return list(map(self._encode, res))
+
+    def count_orders_in_progress(self) -> int:
+        res = ORMOrderObjective.objects.filter(
+            status__in=[
+                OrderObjectiveStatus.PENDING_APPROVAL.value, OrderObjectiveStatus.COMPLETED.value
+            ]
+        )
+        return res.count()
 
     def get_by_id(self, order_objective_id: str) -> ClientOrderObjective:
         try:

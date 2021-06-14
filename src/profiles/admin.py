@@ -44,8 +44,12 @@ class BoostingUserAdmin(admin.ModelAdmin):
 admin.site.register(BoosterUser, BoostingUserAdmin)
 admin.site.register(BungiePlatform)
 admin.site.register(BungieID)
-admin.site.register(ORMNotificationsToken)
 admin.site.register(ORMNotificationsPurposes)
+
+
+@admin.register(ORMNotificationsToken)
+class NotificationsTokensAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'client', 'source')
 
 
 @admin.register(ProfileCredentials)

@@ -18,11 +18,6 @@ logger = logging.getLogger()
 
 
 class UseCaseInjectors(containers.DeclarativeContainer):
-    list_main_page_goods_uc = providers.Factory(
-        ListMainPageGoodsUseCase,
-        service_group_tag_rep=DestinyServiceInjectors.service_tag_rep,
-        service_rep=DestinyServiceInjectors.service_rep
-    )
 
     service_page_uc = providers.Factory(
         ServicePageUseCase,

@@ -70,6 +70,14 @@ class OrderObjectiveRepository(abc.ABC):
     def get_by_id(self, order_objective_id: str) -> ClientOrderObjective:
         pass
 
+    @abc.abstractmethod
+    def count_orders_in_progress(self) -> int:
+        pass
+
+    @abc.abstractmethod
+    def list_pending_approval_orders(self) -> t.List[ClientOrderObjective]:
+        pass
+
 
 class MQEventsRepository(abc.ABC):
 

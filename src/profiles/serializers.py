@@ -72,21 +72,25 @@ class UserProfileSerializer(serializers.ModelSerializer):
     should_set_credentials_for = serializers.SerializerMethodField(default=[])
 
     def get_should_set_credentials_for(self, obj: User) -> t.List[str]:
-        platforms = []
+        platforms = set()
 
         if not obj.is_booster:
-            no_credentials_platforms = ParentOrder.objects.filter(
+            no_credentials_platforms = ParentOrder.objects.distinct('platform__value').select_related('platform').filter(
                 orders__bungie_profile__owner=obj, credentials=None
             )
 
             if no_credentials_platforms:
                 for order in no_credentials_platforms:
                     if order.platform:
-                        platforms.append(order.platform.value)
+                        platforms.add(order.platform.value)
 
-        return platforms
+        return list(platforms)
 
     class Meta:
         model = User
-        fields = ('email', 'id', 'skype', 'discord', 'is_booster', 'booster_profile', 'should_set_credentials_for')
-        read_only_fields = ('email', 'is_booster', 'should_set_credentials_for')
+        fields = (
+            'email', 'id', 'skype', 'discord', 'is_booster', 'booster_profile',
+            'should_set_credentials_for', 'cashback'
+        )
+
+        read_only_fields = ('email', 'is_booster', 'should_set_credentials_for', 'cashback')

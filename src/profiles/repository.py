@@ -133,8 +133,10 @@ class DjangoDestinyBungieProfileRepository(DestinyBungieProfileRepository):
     def create_or_update(self, profile: DestinyBungieProfile):
         _, is_created = ORMDestinyBungieProfile.objects.update_or_create(
             membership_id=profile.membership_id,
-            membership_type=profile.membership_type.value,
             username=profile.username,
+            defaults=dict(
+                membership_type=profile.membership_type.value,
+            )
         )
 
     def get_by_cart_id(self, cart_id: ShoppingCartId):

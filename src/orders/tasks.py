@@ -9,10 +9,12 @@ from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.utils import timezone
 
 from boosting.settings import IS_PROD, TRUSTPILOT_BCC
 from core.clients.application.repository import ClientsRepository
 from core.clients.application.send_web_push import SendWebPushDTORequest, SendWebPushUseCase
+from core.order.application.use_cases.accept_pending_approval_orders_uc import AcceptPendingApprovalOrdersDTORequest
 from core.order.application.use_cases.order_created_notifications import OrderCreatedNotificationsUseCaseDTOInput
 from core.order.application.use_cases.status_callbacks.invalid_credentials import InvalidCredentialsDTORequest
 from core.order.application.use_cases.status_callbacks.order_paused_callback import BoosterPausedOrderDTORequest
@@ -418,6 +420,17 @@ def invalid_credentials_task(
     dto = InvalidCredentialsDTORequest(
         client_id=client_id,
         order_objective_id=order_objective_id
+    )
+    uc.execute(dto)
+
+
+@shared_task
+@inject
+def accept_pending_orders_task(
+    uc=Provide[ApplicationContainer.orders_uc.accept_pending_orders_uc]
+):
+    dto = AcceptPendingApprovalOrdersDTORequest(
+        now=timezone.now()
     )
     uc.execute(dto)
 

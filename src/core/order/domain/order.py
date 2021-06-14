@@ -66,6 +66,13 @@ class ClientOrderObjective(OrderObjectiveStateMachineMixin):
         ]
         return self.status in final_statuses
 
+    def must_be_auto_accepted(self, at: dt.datetime):
+        if not self.status == OrderObjectiveStatus.PENDING_APPROVAL:
+            return False
+        else:
+            will_be_accepted_at = self.status_changed_at + dt.timedelta(days=2)
+            return will_be_accepted_at <= at
+
     def get_booster_price(self, booster_percent: Decimal):
         discount = self.price * (booster_percent / 100)
         return Decimal(self.price - discount)

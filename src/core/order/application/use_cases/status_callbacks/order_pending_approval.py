@@ -45,8 +45,6 @@ class OrderPendingApprovalCallbackUseCase:
             if objective.has_final_status():
                 total_on_complete_statuses.add(objective.id)
 
-        print(total_on_complete_statuses, order_objectives)
-
         if len(total_on_complete_statuses) == len(order_objectives):
             logger.info(
                 'All child orders are complete. '

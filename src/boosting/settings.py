@@ -274,6 +274,10 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Yekaterinburg"
 CELERY_BEAT_SCHEDULE = {
+    "accept-pending-orders": {
+        "task": "orders.tasks.accept_pending_orders_task",
+        "schedule": crontab(hour="0", minute='0'),
+    }
 }
 
 SITE_ID = os.environ.get("SITE_ID", 1)

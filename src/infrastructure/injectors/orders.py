@@ -1,6 +1,7 @@
 from dependency_injector import containers, providers
 
 from core.order.application.repository import ClientOrderRepository, OrderObjectiveRepository
+from core.order.application.use_cases.accept_pending_approval_orders_uc import AcceptPendingApprovalOrdersUseCase
 from core.order.application.use_cases.order_created_notifications import OrderCreatedNotificationsUseCase
 from core.order.application.use_cases.process_payment_callback_uc import ProcessPaymentCallbackUseCase
 from core.order.application.use_cases.status_callbacks.invalid_credentials import InvalidCredentialsUseCase
@@ -35,6 +36,11 @@ class OrdersUseCases(containers.DeclarativeContainer):
     process_payment_callback_uc = providers.Factory(
         ProcessPaymentCallbackUseCase,
         client_orders_repository=orders.client_orders_repository,
+        order_objectives_repository=orders.order_objectives_repository,
+    )
+
+    accept_pending_orders_uc = providers.Factory(
+        AcceptPendingApprovalOrdersUseCase,
         order_objectives_repository=orders.order_objectives_repository,
     )
 
